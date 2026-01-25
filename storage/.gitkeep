@@ -1,0 +1,10 @@
+# This directory stores uploaded files (audio, images)
+# Files in this directory are not committed to git
+#
+# Structure:
+# storage/
+# ├── audio/
+# │   ├── greetings/
+# │   ├── numbers/
+# │   └── food/
+# └── images/

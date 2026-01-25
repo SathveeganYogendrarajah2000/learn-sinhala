@@ -4,41 +4,83 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/learnsinhala}
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/learnsinhala}
 
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 server:
   port: ${SERVER_PORT:8080}
+
+# Actuator for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
 
 app:
   jwt:
     secret: ${JWT_SECRET:your-256-bit-secret-key-here-change-in-production}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    expiration-ms: ${JWT_EXPIRATION:86400000}
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
 
   storage:
-    # Storage type: local, s3, gcs (future)
     type: ${STORAGE_TYPE:local}
-
     local:
-      # Base path for local file storage
       base-path: ${STORAGE_LOCAL_PATH:./storage}
-      # URL prefix for serving files
-      base-url: ${STORAGE_LOCAL_URL:/api/files}
+      base-url: ${STORAGE_LOCAL_URL:/files}
 
-    # Future cloud storage config (uncomment when needed)
-    # s3:
-    #   bucket: ${S3_BUCKET:}
-    #   region: ${S3_REGION:}
-    #   access-key: ${S3_ACCESS_KEY:}
-    #   secret-key: ${S3_SECRET_KEY:}
-
+---
+# Development Profile
 spring:
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    com.learnsinhala: DEBUG
+    org.springframework.security: DEBUG
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+app:
+  cors:
+    allowed-origins: http://localhost,http://frontend,http://localhost:80
+
+logging:
+  level:
+    com.learnsinhala: INFO
+    org.springframework.security: WARN
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://learnsinhala.com}
+
+logging:
+  level:
+    root: WARN
+    com.learnsinhala: INFO

@@ -45,8 +45,14 @@ yarn-error.log*
 # =========================
 # Storage (local files)
 # =========================
-storage/
-!storage/.gitkeep
+storage/audio/*
+!storage/audio/.gitkeep
+
+# =========================
+# Docker
+# =========================
+docker/data/
+docker/ssl/
 
 # =========================
 # OS Files

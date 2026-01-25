@@ -73,6 +73,102 @@ learn-sinhala/
 - **Node.js 20+** - [Download](https://nodejs.org/)
 - **MongoDB 7+** - [Download](https://www.mongodb.com/try/download/community) or use [MongoDB Atlas](https://www.mongodb.com/atlas)
 - **Maven 3.9+** - [Download](https://maven.apache.org/download.cgi)
+- **Docker** (optional) - [Download](https://www.docker.com/products/docker-desktop/)
+
+## Quick Start with Docker
+
+The fastest way to run the entire stack:
+
+### 1. Clone and Configure
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/learn-sinhala.git
+cd learn-sinhala
+
+# Copy environment template
+cp .env.example .env
+
+# Edit .env and set secure passwords
+```
+
+### 2. Run with Docker Compose
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+The application will be available at:
+- **Frontend**: http://localhost:80
+- **Backend API**: http://localhost:8080/api
+- **MongoDB**: localhost:27017
+
+### Docker Compose Files
+
+| File | Purpose |
+|------|---------|
+| `docker-compose.yml` | Default full stack |
+| `docker-compose.dev.yml` | Development (MongoDB + Mongo Express only) |
+| `docker-compose.prod.yml` | Production with optimizations |
+
+### Development with Docker (Database Only)
+
+Run only MongoDB while developing locally:
+
+```bash
+# Start MongoDB + Mongo Express UI
+docker-compose -f docker-compose.dev.yml up -d
+
+# Access Mongo Express at http://localhost:8081
+# Login: admin / admin
+
+# Run backend locally
+cd backend && ./mvnw spring-boot:run
+
+# Run frontend locally
+cd frontend && npm start
+```
+
+### Production Deployment
+
+```bash
+# Set production environment variables
+export MONGO_ROOT_PASSWORD=secure-password-here
+export MONGO_PASSWORD=secure-app-password
+export JWT_SECRET=$(openssl rand -base64 64)
+
+# Build and deploy
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+### Docker Commands Reference
+
+```bash
+# Rebuild a specific service
+docker-compose build backend
+
+# View running containers
+docker-compose ps
+
+# Shell into a container
+docker-compose exec backend sh
+docker-compose exec mongodb mongosh
+
+# View logs for specific service
+docker-compose logs -f backend
+
+# Remove all containers and volumes (WARNING: deletes data)
+docker-compose down -v
+```
+
+---
 
 ## Running the Backend
 

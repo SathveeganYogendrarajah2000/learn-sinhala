@@ -1,0 +1,54 @@
+# ===========================================
+# Learn Sinhala - Docker Compose (Development)
+# Use: docker-compose -f docker-compose.dev.yml up
+# ===========================================
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # MongoDB Database (Development)
+  # ===========================================
+  mongodb:
+    image: mongo:7
+    container_name: learnsinhala-mongodb-dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+      MONGO_INITDB_DATABASE: learnsinhala
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data_dev:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - learnsinhala-dev-network
+
+  # ===========================================
+  # Mongo Express (Database UI)
+  # ===========================================
+  mongo-express:
+    image: mongo-express:latest
+    container_name: learnsinhala-mongo-express
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: adminpassword
+      ME_CONFIG_MONGODB_URL: mongodb://admin:adminpassword@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    networks:
+      - learnsinhala-dev-network
+
+networks:
+  learnsinhala-dev-network:
+    driver: bridge
+
+volumes:
+  mongodb_data_dev:
+    driver: local

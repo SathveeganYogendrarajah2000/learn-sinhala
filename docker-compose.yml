@@ -1,0 +1,112 @@
+# ===========================================
+# Learn Sinhala - Docker Compose
+# Full stack: Frontend + Backend + MongoDB
+# ===========================================
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # MongoDB Database
+  # ===========================================
+  mongodb:
+    image: mongo:7
+    container_name: learnsinhala-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-adminpassword}
+      MONGO_INITDB_DATABASE: learnsinhala
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - learnsinhala-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ===========================================
+  # Spring Boot Backend
+  # ===========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: learnsinhala-backend
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-docker}
+
+      # MongoDB connection
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER:-learnsinhala}:${MONGO_PASSWORD:-learnsinhala123}@mongodb:27017/learnsinhala?authSource=learnsinhala
+
+      # JWT configuration
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-that-should-be-at-least-256-bits-long}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+
+      # Storage
+      STORAGE_LOCAL_PATH: /app/storage
+
+      # Server
+      SERVER_PORT: 8080
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    volumes:
+      - backend_storage:/app/storage
+    networks:
+      - learnsinhala-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # ===========================================
+  # Angular Frontend (Nginx)
+  # ===========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: learnsinhala-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      - learnsinhala-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  learnsinhala-network:
+    driver: bridge
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  mongodb_data:
+    driver: local
+  backend_storage:
+    driver: local
