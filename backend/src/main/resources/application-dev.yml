@@ -1,0 +1,9 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/learnsinhala_dev
+
+logging:
+  level:
+    com.learnsinhala: DEBUG
+    org.springframework.security: DEBUG
