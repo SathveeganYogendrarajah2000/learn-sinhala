@@ -119,13 +119,12 @@ export class AuthService {
 
     // Create basic user from response
     const user: Partial<User> = {
-      username: response.username,
-      displayName: response.displayName
+      email: response.email
     };
     this.storage.setUser(user);
     this.currentUserSignal.set(user as User);
 
-    this.notification.success(`Welcome, ${response.displayName || response.username}!`);
+    this.notification.success(`Welcome, ${response.displayName || response.email}!`);
 
     // Fetch full user profile
     this.fetchCurrentUser().subscribe();

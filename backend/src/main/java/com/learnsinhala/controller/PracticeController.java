@@ -104,7 +104,7 @@ public class PracticeController {
     }
 
     private String getUserId(UserDetails userDetails) {
-        return userRepository.findByUsername(userDetails.getUsername())
+        return userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> ApiException.unauthorized("User not found"))
                 .getId();
     }

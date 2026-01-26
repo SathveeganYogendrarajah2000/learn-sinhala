@@ -42,30 +42,30 @@ public class AuthService {
      * @throws ApiException if username already exists
      */
     public AuthResponse register(RegisterRequest request) {
-        log.debug("Registering user: {}", request.getUsername());
+        log.debug("Registering user: {}", request.getEmail());
 
-        // Check if username already taken
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw ApiException.conflict("Username already exists");
+        // Check if email already taken
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw ApiException.conflict("Email already exists");
         }
 
         // Create new user with hashed password
         User user = User.builder()
-                .username(request.getUsername())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .displayName(request.getDisplayName() != null
-                        ? request.getDisplayName()
-                        : request.getUsername())
                 .enabled(true)
                 .build();
 
         userRepository.save(user);
-        log.info("User registered successfully: {}", user.getUsername());
+        log.info("User registered successfully: {}", user.getEmail());
 
         // Generate token for immediate login
-        String token = jwtTokenProvider.generateToken(user.getUsername());
+        String token = jwtTokenProvider.generateToken(user.getEmail());
 
-        return AuthResponse.of(token, user.getUsername(), user.getDisplayName());
+        String displayName = user.getFirstName() + " " + user.getLastName();
+        return AuthResponse.of(token, user.getEmail(), displayName);
     }
 
     /**
@@ -76,26 +76,26 @@ public class AuthService {
      * @throws BadCredentialsException if credentials are invalid
      */
     public AuthResponse login(LoginRequest request) {
-        log.debug("Login attempt for user: {}", request.getUsername());
+        log.debug("Login attempt for user: {}", request.getEmail());
 
         // Authenticate using Spring Security's AuthenticationManager
-        // This delegates to UserDetailsServiceImpl and PasswordEncoder
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
+                        request.getEmail(),
                         request.getPassword()
                 )
         );
 
         // Fetch user for display name
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> ApiException.unauthorized("User not found"));
 
         // Generate JWT token
         String token = jwtTokenProvider.generateToken(authentication);
 
-        log.info("User logged in successfully: {}", user.getUsername());
+        log.info("User logged in successfully: {}", user.getEmail());
 
-        return AuthResponse.of(token, user.getUsername(), user.getDisplayName());
+        String displayName = user.getFirstName() + " " + user.getLastName();
+        return AuthResponse.of(token, user.getEmail(), displayName);
     }
 }

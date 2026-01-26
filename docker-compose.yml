@@ -51,7 +51,7 @@ services:
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER:-learnsinhala}:${MONGO_PASSWORD:-learnsinhala123}@mongodb:27017/learnsinhala?authSource=learnsinhala
 
       # JWT configuration
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-that-should-be-at-least-256-bits-long}
+      JWT_SECRET: ${JWT_SECRET:-4a6a564b5451674457715a3068565a507a78373461435269784b516b704e386l}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
 
       # Storage

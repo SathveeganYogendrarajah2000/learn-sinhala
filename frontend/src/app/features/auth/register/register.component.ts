@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
+import { RegisterRequest } from '@core/models/auth.model';
 
 @Component({
   selector: 'app-register',
@@ -14,31 +15,48 @@ import { AuthService } from '@core/services/auth.service';
         <p class="subtitle">Start your Sinhala learning journey</p>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label class="form-label" for="username">Username</label>
-            <input
-              id="username"
-              type="text"
-              class="form-input"
-              formControlName="username"
-              [class.error]="form.get('username')?.invalid && form.get('username')?.touched"
-            />
-            @if (form.get('username')?.hasError('required') && form.get('username')?.touched) {
-              <span class="form-error">Username is required</span>
-            }
-            @if (form.get('username')?.hasError('minlength') && form.get('username')?.touched) {
-              <span class="form-error">Username must be at least 3 characters</span>
-            }
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label class="form-label" for="firstName">First Name</label>
+                <input
+                  id="firstName"
+                  type="text"
+                  class="form-input"
+                  formControlName="firstName"
+                  [class.error]="form.get('firstName')?.invalid && form.get('firstName')?.touched"
+                />
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label class="form-label" for="lastName">Last Name</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  class="form-input"
+                  formControlName="lastName"
+                  [class.error]="form.get('lastName')?.invalid && form.get('lastName')?.touched"
+                />
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="displayName">Display Name (optional)</label>
+            <label class="form-label" for="email">Email</label>
             <input
-              id="displayName"
-              type="text"
+              id="email"
+              type="email"
               class="form-input"
-              formControlName="displayName"
+              formControlName="email"
+              [class.error]="form.get('email')?.invalid && form.get('email')?.touched"
             />
+            @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+              <span class="form-error">Email is required</span>
+            }
+            @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+              <span class="form-error">Please enter a valid email</span>
+            }
           </div>
 
           <div class="form-group">
@@ -50,11 +68,22 @@ import { AuthService } from '@core/services/auth.service';
               formControlName="password"
               [class.error]="form.get('password')?.invalid && form.get('password')?.touched"
             />
-            @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
-              <span class="form-error">Password is required</span>
-            }
             @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
               <span class="form-error">Password must be at least 6 characters</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm Password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              class="form-input"
+              formControlName="confirmPassword"
+              [class.error]="form.get('confirmPassword')?.touched && form.hasError('mismatch')"
+            />
+            @if (form.hasError('mismatch') && form.get('confirmPassword')?.touched) {
+              <span class="form-error">Passwords do not match</span>
             }
           </div>
 
@@ -91,10 +120,20 @@ import { AuthService } from '@core/services/auth.service';
       max-width: 400px;
     }
 
+    .row {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .col {
+      flex: 1;
+    }
+
     h1 {
       margin-bottom: 0.5rem;
       text-align: center;
     }
+
 
     .subtitle {
       text-align: center;
@@ -129,13 +168,20 @@ export class RegisterComponent {
   private router = inject(Router);
 
   form = this.fb.nonNullable.group({
-    username: ['', [Validators.required, Validators.minLength(3)]],
-    displayName: [''],
-    password: ['', [Validators.required, Validators.minLength(6)]]
-  });
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', [Validators.required]]
+  }, { validators: this.passwordMatchValidator });
 
   loading = false;
   errorMessage = '';
+
+  passwordMatchValidator(g: any) {
+    return g.get('password').value === g.get('confirmPassword').value
+       ? null : { mismatch: true };
+  }
 
   onSubmit(): void {
     if (this.form.invalid) return;
@@ -143,7 +189,10 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMessage = '';
 
-    this.auth.register(this.form.getRawValue()).subscribe({
+    const { firstName, lastName, email, password } = this.form.getRawValue();
+    const request: RegisterRequest = { firstName, lastName, email, password };
+
+    this.auth.register(request).subscribe({
       next: () => {
         this.router.navigate(['/dashboard']);
       },

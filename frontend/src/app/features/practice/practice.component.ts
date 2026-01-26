@@ -77,14 +77,14 @@ type PracticeState = 'loading' | 'practicing' | 'revealed' | 'complete' | 'empty
             <div class="flashcard card" [class.revealed]="state() === 'revealed'">
               <!-- Question side (Tamil/English) -->
               <div class="card-question">
-                <span class="badge" [class.new]="currentWord()?.isNew">
-                  {{ currentWord()?.isNew ? 'New Word' : 'Review' }}
+                <span class="badge" [class.new]="currentWord().isNew">
+                  {{ currentWord().isNew ? 'New Word' : 'Review' }}
                 </span>
 
                 <div class="prompt">
                   <p class="prompt-label">What is this in Sinhala?</p>
-                  <p class="prompt-tamil">{{ currentWord()?.tamil }}</p>
-                  <p class="prompt-english">({{ currentWord()?.english }})</p>
+                  <p class="prompt-tamil">{{ currentWord().tamil }}</p>
+                  <p class="prompt-english">({{ currentWord().english }})</p>
                 </div>
               </div>
 
@@ -92,21 +92,21 @@ type PracticeState = 'loading' | 'practicing' | 'revealed' | 'complete' | 'empty
               @if (state() === 'revealed') {
                 <div class="card-answer">
                   <div class="answer-main">
-                    <p class="sinhala">{{ currentWord()?.sinhala }}</p>
-                    <p class="pronunciation">/{{ currentWord()?.pronunciation }}/</p>
+                    <p class="sinhala">{{ currentWord().sinhala }}</p>
+                    <p class="pronunciation">/{{ currentWord().pronunciation }}/</p>
                   </div>
 
-                  @if (currentWord()?.audioUrl) {
+                  @if (currentWord().audioUrl) {
                     <app-audio-player
-                      [src]="getAudioUrl(currentWord()?.audioUrl)"
+                      [src]="getAudioUrl(currentWord().audioUrl)"
                       class="audio-player"
                     />
                   }
 
-                  @if (currentWord()?.exampleSinhala) {
+                  @if (currentWord().exampleSinhala) {
                     <div class="example">
-                      <p class="example-sinhala">{{ currentWord()?.exampleSinhala }}</p>
-                      <p class="example-english">{{ currentWord()?.exampleEnglish }}</p>
+                      <p class="example-sinhala">{{ currentWord().exampleSinhala }}</p>
+                      <p class="example-english">{{ currentWord().exampleEnglish }}</p>
                     </div>
                   }
                 </div>

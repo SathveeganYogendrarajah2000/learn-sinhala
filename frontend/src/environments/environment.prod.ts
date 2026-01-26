@@ -3,7 +3,7 @@
  */
 export const environment = {
   production: true,
-  apiUrl: '/api',  // Relative URL for production (same origin)
+  apiUrl: 'http://localhost:8080/api',
 
   // API settings
   api: {

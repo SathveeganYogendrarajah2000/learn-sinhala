@@ -14,7 +14,7 @@ import { SessionStats } from '@core/models/practice.model';
     <app-layout>
       <div class="container">
         <header class="dashboard-header">
-          <h1>Hello, {{ auth.currentUser()?.displayName || 'Learner' }}!</h1>
+          <h1>Hello, {{ auth.currentUser()?.firstName || 'Learner' }}!</h1>
           <p class="subtitle">Ready to learn some Sinhala today?</p>
         </header>
 

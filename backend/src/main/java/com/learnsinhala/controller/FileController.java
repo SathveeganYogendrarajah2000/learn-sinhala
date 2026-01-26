@@ -54,6 +54,7 @@ public class FileController {
      * - Audio: mp3, wav, ogg
      * - Images: png, jpg, gif
      */
+    @SuppressWarnings("null")
     @GetMapping("/**")
     public ResponseEntity<Resource> serveFile(HttpServletRequest request) {
         // Extract path after /api/files/

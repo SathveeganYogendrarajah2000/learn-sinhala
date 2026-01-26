@@ -15,16 +15,19 @@ import { AuthService } from '@core/services/auth.service';
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="form-group">
-            <label class="form-label" for="username">Username</label>
+            <label class="form-label" for="email">Email</label>
             <input
-              id="username"
-              type="text"
+              id="email"
+              type="email"
               class="form-input"
-              formControlName="username"
-              [class.error]="form.get('username')?.invalid && form.get('username')?.touched"
+              formControlName="email"
+              [class.error]="form.get('email')?.invalid && form.get('email')?.touched"
             />
-            @if (form.get('username')?.hasError('required') && form.get('username')?.touched) {
-              <span class="form-error">Username is required</span>
+            @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+              <span class="form-error">Email is required</span>
+            }
+            @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+              <span class="form-error">Please enter a valid email</span>
             }
           </div>
 
@@ -113,7 +116,7 @@ export class LoginComponent {
   private router = inject(Router);
 
   form = this.fb.nonNullable.group({
-    username: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required]
   });
 

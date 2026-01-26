@@ -2,6 +2,7 @@ package com.learnsinhala.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,14 +15,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 50, message = "Username must be 3-50 characters")
-    private String username;
+    @NotBlank(message = "First Name is required")
+    @Size(min = 2, max = 50, message = "First Name must be 2-50 characters")
+    private String firstName;
+
+    @NotBlank(message = "Last Name is required")
+    @Size(min = 2, max = 50, message = "Last Name must be 2-50 characters")
+    private String lastName;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
+    private String email;
 
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
     private String password;
 
-    @Size(max = 100, message = "Display name must be under 100 characters")
-    private String displayName;
+
 }

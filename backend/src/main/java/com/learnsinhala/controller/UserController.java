@@ -43,7 +43,7 @@ public class UserController {
      */
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser(@CurrentUser UserDetails userDetails) {
-        return userRepository.findByUsername(userDetails.getUsername())
+        return userRepository.findByEmail(userDetails.getUsername())
                 .map(user -> ResponseEntity.ok(UserDto.from(user)))
                 .orElseThrow(() -> ApiException.notFound("User not found"));
     }

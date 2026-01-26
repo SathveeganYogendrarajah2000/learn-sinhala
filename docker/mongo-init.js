@@ -3,15 +3,6 @@
 // Creates application database and user
 // ===========================================
 
-// Switch to admin database for authentication
-db = db.getSiblingDB('admin');
-
-// Authenticate as root user
-db.auth(
-    process.env.MONGO_INITDB_ROOT_USERNAME,
-    process.env.MONGO_INITDB_ROOT_PASSWORD
-);
-
 // Switch to application database
 db = db.getSiblingDB('learnsinhala');
 
@@ -34,11 +25,15 @@ db.createCollection('users', {
     validator: {
         $jsonSchema: {
             bsonType: 'object',
-            required: ['username', 'email', 'passwordHash'],
+            required: ['firstName', 'lastName', 'email', 'passwordHash'],
             properties: {
-                username: {
+                firstName: {
                     bsonType: 'string',
-                    description: 'Username is required'
+                    description: 'First name is required'
+                },
+                lastName: {
+                    bsonType: 'string',
+                    description: 'Last name is required'
                 },
                 email: {
                     bsonType: 'string',
@@ -61,7 +56,6 @@ db.createCollection('sentence_patterns');
 print('Created collections');
 
 // Create indexes for better query performance
-db.users.createIndex({ 'username': 1 }, { unique: true });
 db.users.createIndex({ 'email': 1 }, { unique: true });
 
 db.vocabulary.createIndex({ 'category': 1, 'difficulty': 1 });

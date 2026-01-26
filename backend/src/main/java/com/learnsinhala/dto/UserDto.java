@@ -16,16 +16,18 @@ import java.time.Instant;
 public class UserDto {
 
     private String id;
-    private String username;
-    private String displayName;
+    private String firstName;
+    private String lastName;
+    private String email;
     private UserPreferencesDto preferences;
     private Instant createdAt;
 
     public static UserDto from(User user) {
         return UserDto.builder()
                 .id(user.getId())
-                .username(user.getUsername())
-                .displayName(user.getDisplayName())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
                 .preferences(UserPreferencesDto.from(user.getPreferences()))
                 .createdAt(user.getCreatedAt())
                 .build();

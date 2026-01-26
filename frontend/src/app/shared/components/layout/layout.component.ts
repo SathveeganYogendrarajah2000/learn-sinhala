@@ -40,7 +40,7 @@ import { AuthService } from '@core/services/auth.service';
           </nav>
 
           <div class="user-menu">
-            <span class="user-name">{{ auth.currentUser()?.displayName }}</span>
+            <span class="user-name">{{ auth.currentUser()?.firstName }}</span>
             <button class="btn-logout" (click)="auth.logout()">Logout</button>
           </div>
         </div>

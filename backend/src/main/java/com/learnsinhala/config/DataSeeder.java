@@ -34,6 +34,7 @@ public class DataSeeder {
 
     @Bean
     @Profile("dev")
+    @SuppressWarnings("null")
     CommandLineRunner seedVocabulary(VocabularyRepository vocabularyRepository) {
         return args -> {
             if (vocabularyRepository.count() > 0) {

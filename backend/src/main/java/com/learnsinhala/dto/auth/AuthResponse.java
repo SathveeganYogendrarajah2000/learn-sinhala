@@ -13,14 +13,14 @@ public class AuthResponse {
 
     private String token;
     private String tokenType;
-    private String username;
+    private String email;
     private String displayName;
 
-    public static AuthResponse of(String token, String username, String displayName) {
+    public static AuthResponse of(String token, String email, String displayName) {
         return AuthResponse.builder()
                 .token(token)
                 .tokenType("Bearer")
-                .username(username)
+                .email(email)
                 .displayName(displayName)
                 .build();
     }

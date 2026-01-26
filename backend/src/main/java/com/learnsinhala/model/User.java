@@ -17,7 +17,7 @@ import java.time.Instant;
  * User document - stores authentication and preferences.
  *
  * Indexes:
- * - username (unique) - for login lookups
+ * - email (unique) - for login lookups
  */
 @Document(collection = "users")
 @Data
@@ -29,9 +29,14 @@ public class User {
     @Id
     private String id;
 
-    @Indexed(unique = true)
-    private String username;
+    private String firstName;
+    
+    private String lastName;
 
+    @Indexed(unique = true)
+    private String email;
+
+    @org.springframework.data.mongodb.core.mapping.Field("passwordHash")
     private String password;
 
     private String displayName;
