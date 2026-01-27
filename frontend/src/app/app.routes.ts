@@ -57,6 +57,24 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'sentence-patterns',
+    loadComponent: () => import('@features/sentence-patterns/sentence-pattern-list/sentence-pattern-list.component')
+      .then(m => m.SentencePatternListComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'sentence-patterns/new',
+    loadComponent: () => import('@features/sentence-patterns/sentence-pattern-form/sentence-pattern-form.component')
+      .then(m => m.SentencePatternFormComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'sentence-patterns/:id/edit',
+    loadComponent: () => import('@features/sentence-patterns/sentence-pattern-form/sentence-pattern-form.component')
+      .then(m => m.SentencePatternFormComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'sentence-builder',
     loadComponent: () => import('@features/sentence-builder/sentence-builder.component')
       .then(m => m.SentenceBuilderComponent),

@@ -32,6 +32,11 @@ import { AuthService } from '@core/services/auth.service';
                class="nav-link">
               Vocabulary
             </a>
+            <a routerLink="/sentence-patterns"
+               routerLinkActive="active"
+               class="nav-link">
+              Sentence Patterns
+            </a>
             <a routerLink="/sentence-builder"
                routerLinkActive="active"
                class="nav-link">

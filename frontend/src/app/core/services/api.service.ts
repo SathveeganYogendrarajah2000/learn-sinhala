@@ -10,6 +10,11 @@ import {
   Difficulty
 } from '@core/models/vocabulary.model';
 import {
+  SentencePattern,
+  CreateSentencePatternRequest,
+  UpdateSentencePatternRequest
+} from '@core/models/sentence-pattern.model';
+import {
   PracticeSession,
   AnswerRequest,
   AnswerResponse
@@ -153,6 +158,69 @@ export class ApiService {
    */
   deleteVocabulary(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/vocabulary/${id}`);
+  }
+
+  // ========================
+  // Sentence Patterns
+  // ========================
+
+  /**
+   * List sentence patterns with optional filters.
+   */
+  getSentencePatterns(params?: {
+    category?: string;
+    difficulty?: string;
+    page?: number;
+    size?: number;
+  }): Observable<SentencePattern[]> {
+    let httpParams = new HttpParams();
+
+    if (params?.category) {
+      httpParams = httpParams.set('category', params.category);
+    }
+    if (params?.difficulty) {
+      httpParams = httpParams.set('difficulty', params.difficulty);
+    }
+    if (params?.page !== undefined) {
+      httpParams = httpParams.set('page', params.page.toString());
+    }
+    if (params?.size) {
+      httpParams = httpParams.set('size', params.size.toString());
+    }
+
+    return this.http.get<SentencePattern[]>(
+      `${this.apiUrl}/sentence-patterns`,
+      { params: httpParams }
+    ).pipe(retry(this.retryConfig));
+  }
+
+  /**
+   * Get a single sentence pattern.
+   */
+  getSentencePattern(id: string): Observable<SentencePattern> {
+    return this.http.get<SentencePattern>(`${this.apiUrl}/sentence-patterns/${id}`)
+      .pipe(retry(this.retryConfig));
+  }
+
+  /**
+   * Create new sentence pattern.
+   */
+  createSentencePattern(data: CreateSentencePatternRequest): Observable<SentencePattern> {
+    return this.http.post<SentencePattern>(`${this.apiUrl}/sentence-patterns`, data);
+  }
+
+  /**
+   * Update existing sentence pattern.
+   */
+  updateSentencePattern(id: string, data: UpdateSentencePatternRequest): Observable<SentencePattern> {
+    return this.http.put<SentencePattern>(`${this.apiUrl}/sentence-patterns/${id}`, data);
+  }
+
+  /**
+   * Delete sentence pattern.
+   */
+  deleteSentencePattern(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/sentence-patterns/${id}`);
   }
 
   // ========================
