@@ -134,6 +134,27 @@ export class ApiService {
       .pipe(retry(this.retryConfig));
   }
 
+  /**
+   * Create new vocabulary item.
+   */
+  createVocabulary(data: CreateVocabularyRequest): Observable<Vocabulary> {
+    return this.http.post<Vocabulary>(`${this.apiUrl}/vocabulary`, data);
+  }
+
+  /**
+   * Update existing vocabulary item.
+   */
+  updateVocabulary(id: string, data: UpdateVocabularyRequest): Observable<Vocabulary> {
+    return this.http.put<Vocabulary>(`${this.apiUrl}/vocabulary/${id}`, data);
+  }
+
+  /**
+   * Delete vocabulary item.
+   */
+  deleteVocabulary(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/vocabulary/${id}`);
+  }
+
   // ========================
   // Practice
   // ========================
@@ -181,4 +202,32 @@ export interface ProgressUpdateResponse {
   accuracy: number;
   nextReviewAt: string;
   message: string;
+}
+
+export interface CreateVocabularyRequest {
+  sinhala: string;
+  pronunciation?: string;
+  tamil: string;
+  english: string;
+  category: Category;
+  difficulty: Difficulty;
+  audioUrl?: string;
+  exampleSinhala?: string;
+  exampleEnglish?: string;
+  notes?: string;
+  tags?: string[];
+}
+
+export interface UpdateVocabularyRequest {
+  sinhala?: string;
+  pronunciation?: string;
+  tamil?: string;
+  english?: string;
+  category?: Category;
+  difficulty?: Difficulty;
+  audioUrl?: string;
+  exampleSinhala?: string;
+  exampleEnglish?: string;
+  notes?: string;
+  tags?: string[];
 }

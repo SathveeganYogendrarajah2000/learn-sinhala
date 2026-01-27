@@ -34,6 +34,7 @@ public class PracticeWord {
     private int currentStreak;
     private String currentStatus;
 
+    @SuppressWarnings("null")
     public static PracticeWord from(Vocabulary vocab, UserProgress progress) {
         boolean isNew = progress == null;
 

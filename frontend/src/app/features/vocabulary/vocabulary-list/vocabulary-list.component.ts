@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '@shared/components/layout/layout.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { ApiService } from '@core/services/api.service';
+import { NotificationService } from '@core/services/notification.service';
 import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model';
 
 @Component({
@@ -15,8 +16,15 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
     <app-layout>
       <div class="container">
         <header class="page-header">
-          <h1>Vocabulary</h1>
-          <p>Browse and learn Sinhala words</p>
+          <div class="header-content">
+            <div>
+              <h1>Vocabulary</h1>
+              <p>Browse and learn Sinhala words</p>
+            </div>
+            <button class="btn btn-primary" [routerLink]="['/vocabulary/new']">
+              + Add New Vocabulary
+            </button>
+          </div>
         </header>
 
         <!-- Filters -->
@@ -90,6 +98,23 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
                     </div>
                   }
                 </a>
+                <div class="vocab-actions">
+                  <button
+                    class="btn-icon"
+                    [routerLink]="['/vocabulary', word.id, 'edit']"
+                    (click)="$event.stopPropagation()"
+                    title="Edit"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    class="btn-icon btn-danger"
+                    (click)="onDelete(word.id, word.sinhala); $event.stopPropagation()"
+                    title="Delete"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
             }
           </div>
@@ -125,8 +150,16 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
       margin-bottom: 1.5rem;
     }
 
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
     .page-header p {
       color: var(--text-secondary);
+      margin: 0;
     }
 
     .filters {
@@ -168,6 +201,7 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
       border-radius: var(--radius);
       border: 1px solid var(--border);
       transition: all 0.2s ease;
+      position: relative;
     }
 
     .vocab-card:hover {
@@ -177,6 +211,40 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
 
     .vocab-card.mastered {
       border-color: var(--secondary);
+    }
+
+    .vocab-actions {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      display: flex;
+      gap: 0.25rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .vocab-card:hover .vocab-actions {
+      opacity: 1;
+    }
+
+    .btn-icon {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: var(--bg-secondary);
+      transform: scale(1.1);
+    }
+
+    .btn-icon.btn-danger:hover {
+      background: #fee2e2;
+      border-color: #dc2626;
     }
 
     .vocab-link {
@@ -263,6 +331,7 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
 })
 export class VocabularyListComponent implements OnInit {
   private api = inject(ApiService);
+  private notification = inject(NotificationService);
 
   // State
   loading = signal(true);
@@ -337,6 +406,21 @@ export class VocabularyListComponent implements OnInit {
   goToPage(page: number): void {
     this.currentPage.set(page);
     this.loadVocabulary();
+  }
+
+  onDelete(id: string, sinhala: string): void {
+    const confirmed = confirm(`Are you sure you want to delete "${sinhala}"?`);
+    if (!confirmed) return;
+
+    this.api.deleteVocabulary(id).subscribe({
+      next: () => {
+        this.notification.success('Vocabulary deleted successfully');
+        this.loadVocabulary();
+      },
+      error: () => {
+        this.notification.error('Failed to delete vocabulary');
+      }
+    });
   }
 
   formatCategory(category: string): string {

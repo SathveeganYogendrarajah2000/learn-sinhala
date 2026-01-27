@@ -95,6 +95,99 @@ public class VocabularyService {
     }
 
     /**
+     * Create new vocabulary item.
+     */
+    public VocabularyDto createVocabulary(com.learnsinhala.dto.vocabulary.CreateVocabularyRequest request) {
+        Vocabulary vocab = Vocabulary.builder()
+                .sinhala(request.getSinhala())
+                .pronunciation(request.getPronunciation())
+                .tamil(request.getTamil())
+                .english(request.getEnglish())
+                .category(request.getCategory())
+                .difficulty(request.getDifficulty())
+                .audioUrl(request.getAudioUrl())
+                .exampleSinhala(request.getExampleSinhala())
+                .exampleEnglish(request.getExampleEnglish())
+                .notes(request.getNotes())
+                .tags(request.getTags() != null ? request.getTags() : new java.util.ArrayList<>())
+                .build();
+
+        vocab = vocabularyRepository.save(vocab);
+
+        log.info("Created new vocabulary: {} ({})", vocab.getSinhala(), vocab.getId());
+
+        return VocabularyDto.from(vocab);
+    }
+
+    /**
+     * Update existing vocabulary item.
+     * Only updates fields that are provided (non-null).
+     */
+    public VocabularyDto updateVocabulary(String id, com.learnsinhala.dto.vocabulary.UpdateVocabularyRequest request) {
+        Vocabulary vocab = vocabularyRepository.findById(id)
+                .orElseThrow(() -> ApiException.notFound("Vocabulary not found"));
+
+        // Update only provided fields
+        if (request.getSinhala() != null) {
+            vocab.setSinhala(request.getSinhala());
+        }
+        if (request.getPronunciation() != null) {
+            vocab.setPronunciation(request.getPronunciation());
+        }
+        if (request.getTamil() != null) {
+            vocab.setTamil(request.getTamil());
+        }
+        if (request.getEnglish() != null) {
+            vocab.setEnglish(request.getEnglish());
+        }
+        if (request.getCategory() != null) {
+            vocab.setCategory(request.getCategory());
+        }
+        if (request.getDifficulty() != null) {
+            vocab.setDifficulty(request.getDifficulty());
+        }
+        if (request.getAudioUrl() != null) {
+            vocab.setAudioUrl(request.getAudioUrl());
+        }
+        if (request.getExampleSinhala() != null) {
+            vocab.setExampleSinhala(request.getExampleSinhala());
+        }
+        if (request.getExampleEnglish() != null) {
+            vocab.setExampleEnglish(request.getExampleEnglish());
+        }
+        if (request.getNotes() != null) {
+            vocab.setNotes(request.getNotes());
+        }
+        if (request.getTags() != null) {
+            vocab.setTags(request.getTags());
+        }
+
+        vocab = vocabularyRepository.save(vocab);
+
+        log.info("Updated vocabulary: {} ({})", vocab.getSinhala(), vocab.getId());
+
+        return VocabularyDto.from(vocab);
+    }
+
+    /**
+     * Delete vocabulary item and all associated user progress records.
+     */
+    public void deleteVocabulary(String id) {
+        // Verify vocabulary exists
+        if (!vocabularyRepository.existsById(id)) {
+            throw ApiException.notFound("Vocabulary not found");
+        }
+
+        // Delete all user progress for this vocabulary
+        userProgressRepository.deleteByVocabularyId(id);
+
+        // Delete the vocabulary
+        vocabularyRepository.deleteById(id);
+
+        log.info("Deleted vocabulary: {}", id);
+    }
+
+    /**
      * Update user's progress for a vocabulary item.
      * Implements simple spaced repetition algorithm.
      */

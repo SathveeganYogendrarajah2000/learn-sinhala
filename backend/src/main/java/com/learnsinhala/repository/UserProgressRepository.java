@@ -24,4 +24,6 @@ public interface UserProgressRepository extends MongoRepository<UserProgress, St
     long countByUserIdAndStatus(String userId, LearningStatus status);
 
     List<UserProgress> findByUserIdAndVocabularyIdIn(String userId, List<String> vocabularyIds);
+
+    void deleteByVocabularyId(String vocabularyId);
 }

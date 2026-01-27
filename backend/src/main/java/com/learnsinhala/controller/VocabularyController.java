@@ -2,18 +2,23 @@ package com.learnsinhala.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.learnsinhala.dto.vocabulary.CreateVocabularyRequest;
 import com.learnsinhala.dto.vocabulary.ProgressResponse;
 import com.learnsinhala.dto.vocabulary.UpdateProgressRequest;
+import com.learnsinhala.dto.vocabulary.UpdateVocabularyRequest;
 import com.learnsinhala.dto.vocabulary.VocabularyDto;
 import com.learnsinhala.dto.vocabulary.VocabularyListResponse;
 import com.learnsinhala.exception.ApiException;
@@ -85,6 +90,68 @@ public class VocabularyController {
         String userId = getUserId(userDetails);
         VocabularyDto vocab = vocabularyService.getVocabulary(userId, id);
         return ResponseEntity.ok(vocab);
+    }
+
+    /**
+     * Create new vocabulary item.
+     *
+     * POST /api/vocabulary
+     *
+     * Request body:
+     * {
+     *   "sinhala": "ayubowan",
+     *   "tamil": "வணக்கம்",
+     *   "english": "hello",
+     *   "category": "GREETINGS",
+     *   "difficulty": "BEGINNER",
+     *   "audioUrl": "/audio/greetings/ayubowan.mp3" (optional)
+     * }
+     */
+    @PostMapping
+    public ResponseEntity<VocabularyDto> createVocabulary(
+            @CurrentUser UserDetails userDetails,
+            @Valid @RequestBody CreateVocabularyRequest request
+    ) {
+        String userId = getUserId(userDetails);
+        VocabularyDto vocab = vocabularyService.createVocabulary(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(vocab);
+    }
+
+    /**
+     * Update existing vocabulary item.
+     *
+     * PUT /api/vocabulary/{id}
+     *
+     * Request body (all fields optional):
+     * {
+     *   "english": "greeting",
+     *   "notes": "Formal greeting"
+     * }
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<VocabularyDto> updateVocabulary(
+            @CurrentUser UserDetails userDetails,
+            @PathVariable String id,
+            @Valid @RequestBody UpdateVocabularyRequest request
+    ) {
+        String userId = getUserId(userDetails);
+        VocabularyDto vocab = vocabularyService.updateVocabulary(id, request);
+        return ResponseEntity.ok(vocab);
+    }
+
+    /**
+     * Delete vocabulary item.
+     *
+     * DELETE /api/vocabulary/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVocabulary(
+            @CurrentUser UserDetails userDetails,
+            @PathVariable String id
+    ) {
+        String userId = getUserId(userDetails);
+        vocabularyService.deleteVocabulary(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
