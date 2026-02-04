@@ -1,0 +1,135 @@
+<div class="import-container">
+  <div class="import-header">
+    <h1>Import Vocabulary</h1>
+    <p class="subtitle">Upload a CSV file to bulk import vocabulary items</p>
+  </div>
+
+  <!-- Download Template -->
+  <div class="action-bar">
+    <button class="btn-download" (click)="downloadTemplate()">
+      <span class="icon">📥</span>
+      Download CSV Template
+    </button>
+  </div>
+
+  <!-- File Upload Zone -->
+  <div class="upload-zone" 
+       [class.dragging]="isDragging"
+       [class.has-file]="selectedFile"
+       (dragover)="onDragOver($event)"
+       (dragleave)="onDragLeave($event)"
+       (drop)="onDropFile($event)">
+      
+    <div *ngIf="!selectedFile" class="upload-empty">
+      <div class="upload-icon">📂</div>
+      <p class="upload-text">Drag and drop your CSV file here</p>
+      <p class="upload-or">or</p>
+      <label class="btn-browse">
+        Browse Files
+        <input type="file" 
+               accept=".csv" 
+               (change)="onFileSelected($event)" 
+               hidden>
+      </label>
+      <p class="upload-hint">Maximum file size: 5MB</p>
+    </div>
+
+    <div *ngIf="selectedFile && !uploadResult" class="file-selected">
+      <div class="file-info">
+        <span class="file-icon">📄</span>
+        <div class="file-details">
+          <p class="file-name">{{ selectedFile.name }}</p>
+          <p class="file-size">{{ (selectedFile.size / 1024).toFixed(2) }} KB</p>
+        </div>
+        <button class="btn-clear" (click)="clearFile()">✕</button>
+      </div>
+
+      <!-- CSV Preview -->
+      <div *ngIf="csvPreview.length > 0" class="csv-preview">
+        <h3>Preview (first 5 rows)</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th *ngFor="let header of csvPreview[0]">{{ header }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of csvPreview.slice(1)">
+                <td *ngFor="let cell of row">{{ cell }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Upload Actions -->
+      <div class="upload-actions">
+        <button class="btn-cancel" (click)="clearFile()">Cancel</button>
+        <button class="btn-upload" 
+                (click)="uploadCsv()" 
+                [disabled]="isUploading">
+          <span *ngIf="!isUploading">Upload CSV</span>
+          <span *ngIf="isUploading" class="loading">Uploading...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Results -->
+  <div *ngIf="uploadResult" class="upload-results">
+    <div class="results-header">
+      <h2>Upload Results</h2>
+      <button class="btn-close" (click)="uploadResult = null">✕</button>
+    </div>
+
+    <div class="results-summary">
+      <div class="stat-card success">
+        <span class="stat-value">{{ uploadResult.successCount }}</span>
+        <span class="stat-label">Successful</span>
+      </div>
+      <div class="stat-card error" *ngIf="uploadResult.errorCount > 0">
+        <span class="stat-value">{{ uploadResult.errorCount }}</span>
+        <span class="stat-label">Errors</span>
+      </div>
+      <div class="stat-card total">
+        <span class="stat-value">{{ uploadResult.totalRows }}</span>
+        <span class="stat-label">Total Rows</span>
+      </div>
+    </div>
+
+    <!-- Error List -->
+    <div *ngIf="uploadResult.errors.length > 0" class="error-list">
+      <h3>Errors ({{ uploadResult.errors.length }})</h3>
+      <div class="error-table-wrapper">
+        <table class="error-table">
+          <thead>
+            <tr>
+              <th>Row</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let error of uploadResult.errors">
+              <td>#{{ error.rowNumber }}</td>
+              <td>
+                <span *ngIf="error.field" class="error-field">{{ error.field }}:</span>
+                {{ error.message }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Next Actions -->
+    <div class="next-actions">
+      <button class="btn-secondary" (click)="clearFile(); uploadResult = null">
+        Import More
+      </button>
+      <button class="btn-primary" (click)="viewVocabulary()">
+        View Vocabulary
+      </button>
+    </div>
+  </div>
+</div>

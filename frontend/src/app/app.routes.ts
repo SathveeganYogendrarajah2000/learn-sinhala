@@ -39,6 +39,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'vocabulary/import',
+    loadComponent: () => import('@features/vocabulary/vocabulary-import/vocabulary-import.component')
+      .then(m => m.VocabularyImportComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'vocabulary/new',
     loadComponent: () => import('@features/vocabulary/vocabulary-form/vocabulary-form.component')
       .then(m => m.VocabularyFormComponent),

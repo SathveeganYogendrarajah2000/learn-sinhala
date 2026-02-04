@@ -11,7 +11,8 @@ services:
   # Spring Boot Backend (Production)
   # ===========================================
   backend:
-    image: sathveegan/learn-sinhala-backend:${BACKEND_VERSION}
+    # image: sathveegan/learn-sinhala-backend:${BACKEND_VERSION}
+    image: learnsinhala-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -63,7 +64,8 @@ services:
   # Angular Frontend with Nginx (Production)
   # ===========================================
   frontend:
-    image: sathveegan/learn-sinhala-frontend:${FRONTEND_VERSION}
+    # image: sathveegan/learn-sinhala-frontend:${FRONTEND_VERSION}
+    image: learnsinhala-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

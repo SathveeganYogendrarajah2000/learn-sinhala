@@ -88,6 +88,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Apache Commons CSV for vocabulary import -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

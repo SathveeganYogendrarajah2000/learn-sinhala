@@ -23,11 +23,25 @@ import com.learnsinhala.repository.VocabularyRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.learnsinhala.dto.vocabulary.CsvUploadResponse;
+import com.learnsinhala.dto.vocabulary.CsvUploadResponse.RowError;
+import com.learnsinhala.dto.vocabulary.CsvVocabularyRow;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -185,6 +199,170 @@ public class VocabularyService {
         vocabularyRepository.deleteById(id);
 
         log.info("Deleted vocabulary: {}", id);
+    }
+
+    /**
+     * Import vocabulary items from CSV file.
+     *
+     * Expected CSV format:
+     * sinhala,pronunciation,tamil,english,category,difficulty,audioUrl,exampleSinhala,exampleEnglish,notes,tags
+     *
+     * - Required fields: sinhala, english, category, difficulty
+     * - Optional fields: All others
+     * - Tags: Semicolon-separated (e.g., "greetings;formal;common")
+     *
+     * @param file CSV file uploaded by user
+     * @return Upload results with success/error counts and details
+     */
+    @Transactional
+    public CsvUploadResponse importFromCsv(MultipartFile file) {
+        log.info("Starting CSV import: {}", file.getOriginalFilename());
+
+        List<Vocabulary> successfulRows = new ArrayList<>();
+        List<RowError> errors = new ArrayList<>();
+        int rowNumber = 0;
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+
+            // Configure CSV parser
+            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                    .setHeader()  // Use first row as header
+                    .setSkipHeaderRecord(true)
+                    .setTrim(true)
+                    .setIgnoreEmptyLines(true)
+                    .build();
+
+            CSVParser csvParser = new CSVParser(reader, csvFormat);
+
+            // Process each row
+            for (CSVRecord record : csvParser) {
+                rowNumber++;
+
+                try {
+                    // Parse CSV row
+                    CsvVocabularyRow csvRow = parseCsvRecord(record);
+
+                    // Validate required fields
+                    List<String> validationErrors = csvRow.validate();
+                    if (!validationErrors.isEmpty()) {
+                        // Add all validation errors for this row
+                        for (String error : validationErrors) {
+                            errors.add(RowError.builder()
+                                    .rowNumber(rowNumber)
+                                    .message(error)
+                                    .rawData(record.toString())
+                                    .build());
+                        }
+                        continue;  // Skip this row
+                    }
+
+                    // Convert to Vocabulary entity
+                    Vocabulary vocab = convertToVocabulary(csvRow);
+                    successfulRows.add(vocab);
+
+                } catch (Exception e) {
+                    log.warn("Error processing CSV row {}: {}", rowNumber, e.getMessage());
+                    errors.add(RowError.builder()
+                            .rowNumber(rowNumber)
+                            .message("Parsing error: " + e.getMessage())
+                            .rawData(record.toString())
+                            .build());
+                }
+            }
+
+            // Bulk insert successful rows
+            List<String> createdIds = new ArrayList<>();
+            if (!successfulRows.isEmpty()) {
+                List<Vocabulary> savedVocabulary = vocabularyRepository.saveAll(successfulRows);
+                createdIds = savedVocabulary.stream()
+                        .map(Vocabulary::getId)
+                        .toList();
+
+                log.info("Successfully imported {} vocabulary items", createdIds.size());
+            }
+
+            // Build response
+            int totalRows = rowNumber;
+            int successCount = successfulRows.size();
+            int errorCount = errors.size();
+
+            log.info("CSV import completed: {} total rows, {} success, {} errors",
+                    totalRows, successCount, errorCount);
+
+            return CsvUploadResponse.builder()
+                    .totalRows(totalRows)
+                    .successCount(successCount)
+                    .errorCount(errorCount)
+                    .createdIds(createdIds)
+                    .errors(errors)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Fatal error during CSV import", e);
+            throw ApiException.badRequest("Failed to process CSV file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Parse a CSV record into CsvVocabularyRow DTO
+     */
+    private CsvVocabularyRow parseCsvRecord(CSVRecord record) {
+        // Parse tags (semicolon-separated)
+        String tagsStr = getField(record, "tags");
+        List<String> tags = new ArrayList<>();
+        if (tagsStr != null && !tagsStr.trim().isEmpty()) {
+            tags = Arrays.stream(tagsStr.split(";"))
+                    .map(String::trim)
+                    .filter(tag -> !tag.isEmpty())
+                    .toList();
+        }
+
+        return CsvVocabularyRow.builder()
+                .sinhala(getField(record, "sinhala"))
+                .pronunciation(getField(record, "pronunciation"))
+                .tamil(getField(record, "tamil"))
+                .english(getField(record, "english"))
+                .category(getField(record, "category"))
+                .difficulty(getField(record, "difficulty"))
+                .audioUrl(getField(record, "audioUrl"))
+                .exampleSinhala(getField(record, "exampleSinhala"))
+                .exampleEnglish(getField(record, "exampleEnglish"))
+                .notes(getField(record, "notes"))
+                .tags(tags)
+                .build();
+    }
+
+    /**
+     * Safely get field from CSV record, returning null if not present or empty
+     */
+    private String getField(CSVRecord record, String fieldName) {
+        try {
+            String value = record.get(fieldName);
+            return (value != null && !value.trim().isEmpty()) ? value.trim() : null;
+        } catch (IllegalArgumentException e) {
+            // Field not in CSV - that's okay for optional fields
+            return null;
+        }
+    }
+
+    /**
+     * Convert CsvVocabularyRow to Vocabulary entity
+     */
+    private Vocabulary convertToVocabulary(CsvVocabularyRow csvRow) {
+        return Vocabulary.builder()
+                .sinhala(csvRow.getSinhala())
+                .pronunciation(csvRow.getPronunciation())
+                .tamil(csvRow.getTamil())
+                .english(csvRow.getEnglish())
+                .category(csvRow.getCategoryEnum())
+                .difficulty(csvRow.getDifficultyEnum())
+                .audioUrl(csvRow.getAudioUrl())
+                .exampleSinhala(csvRow.getExampleSinhala())
+                .exampleEnglish(csvRow.getExampleEnglish())
+                .notes(csvRow.getNotes())
+                .tags(csvRow.getTags())
+                .build();
     }
 
     /**
