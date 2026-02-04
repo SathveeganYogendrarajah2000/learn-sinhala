@@ -3,7 +3,8 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8080/api',
+  // Use relative URL - nginx will proxy to backend (no CORS, no CSP issues)
+  apiUrl: '/api',
 
   // API settings
   api: {

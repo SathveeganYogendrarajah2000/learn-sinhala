@@ -9,40 +9,41 @@ services:
   # ===========================================
   # MongoDB Database
   # ===========================================
-  mongodb:
-    image: mongo:7
-    container_name: learnsinhala-mongodb
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-adminpassword}
-      MONGO_INITDB_DATABASE: learnsinhala
-    ports:
-      - "${MONGO_PORT:-27017}:27017"
-    volumes:
-      - mongodb_data:/data/db
-      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    networks:
-      - learnsinhala-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+  # mongodb:
+  #   image: mongo:7
+  #   container_name: learnsinhala-mongodb
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-adminpassword}
+  #     MONGO_INITDB_DATABASE: learnsinhala
+  #   ports:
+  #     - "${MONGO_PORT:-27017}:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  #   networks:
+  #     - learnsinhala-network
+  #   healthcheck:
+  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 30s
 
   # ===========================================
   # Spring Boot Backend
   # ===========================================
   backend:
+    image: learnsinhala-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: learnsinhala-backend
     restart: unless-stopped
-    depends_on:
-      mongodb:
-        condition: service_healthy
+    # depends_on:
+    #   mongodb:
+    #     condition: service_healthy
     environment:
       # Spring profiles
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-docker}
@@ -76,6 +77,7 @@ services:
   # Angular Frontend (Nginx)
   # ===========================================
   frontend:
+    image: learnsinhala-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -106,7 +108,7 @@ networks:
 # Volumes
 # ===========================================
 volumes:
-  mongodb_data:
-    driver: local
+  # mongodb_data:
+  #   driver: local
   backend_storage:
     driver: local

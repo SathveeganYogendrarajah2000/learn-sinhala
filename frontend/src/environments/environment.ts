@@ -2,8 +2,8 @@
  * Development environment configuration.
  */
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api',
+  // Use relative URL - nginx will proxy to backend
+  apiUrl: '/api',
 
   // API settings
   api: {
