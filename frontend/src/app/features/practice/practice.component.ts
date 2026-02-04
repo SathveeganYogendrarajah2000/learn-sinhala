@@ -109,6 +109,14 @@ type PracticeState = 'loading' | 'practicing' | 'revealed' | 'complete' | 'empty
                       <p class="example-english">{{ currentWord().exampleEnglish }}</p>
                     </div>
                   }
+
+                  <button
+                    class="btn btn-outline btn-sm edit-btn"
+                    (click)="editCurrentWord()"
+                    title="Edit this vocabulary"
+                  >
+                    ✏️ Edit Vocabulary
+                  </button>
                 </div>
               }
             </div>
@@ -297,6 +305,12 @@ type PracticeState = 'loading' | 'practicing' | 'revealed' | 'complete' | 'empty
     .example-english {
       font-size: 0.875rem;
       color: var(--text-secondary);
+    }
+
+    .edit-btn {
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      padding: 0.5rem 1rem;
     }
 
     /* Actions */
@@ -539,6 +553,13 @@ export class PracticeComponent implements OnInit {
 
   goToDashboard(): void {
     this.router.navigate(['/dashboard']);
+  }
+
+  editCurrentWord(): void {
+    const word = this.currentWord();
+    if (word) {
+      this.router.navigate(['/vocabulary', word.id, 'edit']);
+    }
   }
 
   getAudioUrl(path: string | null | undefined): string {
