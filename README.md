@@ -193,14 +193,6 @@ docker-compose -f docker-compose.prod.yml --env-file .env.prod push
 - **Nginx**: Handles static files + API proxy (no CORS needed)
 - **CSP**: Configured to allow Google Fonts while maintaining security
 
-## CI/CD
-
-GitHub Actions automatically:
-- Builds on every push
-- Runs tests
-- Creates Docker images
-- Deploys to production (on main branch)
-
 ## License
 
 Private - All Rights Reserved
