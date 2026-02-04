@@ -39,7 +39,9 @@ public class Vocabulary {
 
     /**
      * Romanized Sinhala word/phrase (e.g., "kohomada" for "how are you")
+     * Unique to prevent duplicate entries.
      */
+    @Indexed(unique = true)
     private String sinhala;
 
     /**

@@ -31,4 +31,10 @@ public interface VocabularyRepository extends MongoRepository<Vocabulary, String
     long countByCategory(Category category);
 
     long countByDifficulty(Difficulty difficulty);
+
+    /**
+     * Check if vocabulary with given sinhala word exists.
+     * Used for duplicate detection during CSV import.
+     */
+    boolean existsBySinhala(String sinhala);
 }

@@ -222,6 +222,9 @@ public class VocabularyService {
         List<RowError> errors = new ArrayList<>();
         int rowNumber = 0;
 
+        // Track sinhala words seen in this CSV to detect duplicates within the file
+        Map<String, Integer> sinhalaSeen = new java.util.HashMap<>();
+
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
@@ -256,6 +259,34 @@ public class VocabularyService {
                         }
                         continue;  // Skip this row
                     }
+
+                    // Check for duplicate within CSV file
+                    String sinhala = csvRow.getSinhala().trim().toLowerCase();
+                    if (sinhalaSeen.containsKey(sinhala)) {
+                        errors.add(RowError.builder()
+                                .rowNumber(rowNumber)
+                                .field("sinhala")
+                                .message("Duplicate within CSV: '" + csvRow.getSinhala() + 
+                                        "' already appears at row " + sinhalaSeen.get(sinhala))
+                                .rawData(record.toString())
+                                .build());
+                        continue;  // Skip this row
+                    }
+
+                    // Check if vocabulary already exists in database
+                    if (vocabularyRepository.existsBySinhala(csvRow.getSinhala())) {
+                        errors.add(RowError.builder()
+                                .rowNumber(rowNumber)
+                                .field("sinhala")
+                                .message("Duplicate entry: '" + csvRow.getSinhala() + 
+                                        "' already exists in database")
+                                .rawData(record.toString())
+                                .build());
+                        continue;  // Skip this row
+                    }
+
+                    // Mark this sinhala word as seen
+                    sinhalaSeen.put(sinhala, rowNumber);
 
                     // Convert to Vocabulary entity
                     Vocabulary vocab = convertToVocabulary(csvRow);
