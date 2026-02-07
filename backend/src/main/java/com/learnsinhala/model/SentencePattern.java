@@ -81,6 +81,14 @@ public class SentencePattern {
      */
     private String audioUrl;
 
+    /**
+     * User ID of the creator. Used for RBAC.
+     * - USER role can only view/edit/delete their own content
+     * - ADMIN and SUPERADMIN can view/edit/delete all content
+     */
+    @Indexed
+    private String createdBy;
+
     @CreatedDate
     private Instant createdAt;
 

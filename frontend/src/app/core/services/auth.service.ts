@@ -12,6 +12,7 @@ import {
   RegisterRequest,
   User
 } from '@core/models/auth.model';
+import { Role } from '@core/models/role.enum';
 
 /**
  * Authentication service using Angular signals for state management.
@@ -32,6 +33,7 @@ export class AuthService {
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isAuthenticated = computed(() => !!this.currentUserSignal());
   readonly isLoading = this.loadingSignal.asReadonly();
+  readonly userRole = computed(() => this.currentUserSignal()?.role || Role.USER);
 
   constructor(
     private http: HttpClient,
@@ -117,9 +119,13 @@ export class AuthService {
   private handleAuthSuccess(response: AuthResponse): void {
     this.storage.setToken(response.token);
 
+    // Convert role string to enum
+    const role = response.role as keyof typeof Role;
+
     // Create basic user from response
     const user: Partial<User> = {
-      email: response.email
+      email: response.email,
+      role: Role[role] || Role.USER  // Default to USER if invalid
     };
     this.storage.setUser(user);
     this.currentUserSignal.set(user as User);
@@ -140,5 +146,27 @@ export class AuthService {
         this.currentUserSignal.set(user);
       }
     }
+  }
+
+  /**
+   * Check if current user is ADMIN or SUPERADMIN.
+   */
+  isAdmin(): boolean {
+    const role = this.currentUserSignal()?.role;
+    return role === Role.ADMIN || role === Role.SUPERADMIN;
+  }
+
+  /**
+   * Check if current user is SUPERADMIN.
+   */
+  isSuperAdmin(): boolean {
+    return this.currentUserSignal()?.role === Role.SUPERADMIN;
+  }
+
+  /**
+   * Get current user's role.
+   */
+  getUserRole(): Role {
+    return this.currentUserSignal()?.role || Role.USER;
   }
 }

@@ -37,4 +37,30 @@ public interface VocabularyRepository extends MongoRepository<Vocabulary, String
      * Used for duplicate detection during CSV import.
      */
     boolean existsBySinhala(String sinhala);
+
+    /**
+     * Find vocabulary items created by a specific user.
+     * Used for USER role to see only their own content.
+     */
+    Page<Vocabulary> findByCreatedBy(String createdBy, Pageable pageable);
+
+    /**
+     * Count vocabulary items by creator (for statistics).
+     */
+    long countByCreatedBy(String createdBy);
+
+    /**
+     * Find by category and creator.
+     */
+    Page<Vocabulary> findByCategoryAndCreatedBy(Category category, String createdBy, Pageable pageable);
+
+    /**
+     * Find by difficulty and creator.
+     */
+    Page<Vocabulary> findByDifficultyAndCreatedBy(Difficulty difficulty, String createdBy, Pageable pageable);
+
+    /**
+     * Find by category, difficulty, and creator.
+     */
+    Page<Vocabulary> findByCategoryAndDifficultyAndCreatedBy(Category category, Difficulty difficulty, String createdBy, Pageable pageable);
 }

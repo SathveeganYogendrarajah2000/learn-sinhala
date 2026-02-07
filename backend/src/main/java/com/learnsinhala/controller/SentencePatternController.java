@@ -57,13 +57,13 @@ public class SentencePatternController {
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
     ) {
-        String userId = getUserId(userDetails);
+        com.learnsinhala.model.User user = getUser(userDetails);
 
         Category cat = parseCategory(category);
         Difficulty diff = parseDifficulty(difficulty);
 
         List<SentencePatternDto> patterns = sentencePatternService.listSentencePatterns(
-                cat, diff, page, size
+                user, cat, diff, page, size
         );
 
         return ResponseEntity.ok(patterns);
@@ -79,8 +79,8 @@ public class SentencePatternController {
             @CurrentUser UserDetails userDetails,
             @PathVariable String id
     ) {
-        String userId = getUserId(userDetails);
-        SentencePatternDto pattern = sentencePatternService.getSentencePattern(id);
+        com.learnsinhala.model.User user = getUser(userDetails);
+        SentencePatternDto pattern = sentencePatternService.getSentencePattern(user, id);
         return ResponseEntity.ok(pattern);
     }
 
@@ -94,8 +94,8 @@ public class SentencePatternController {
             @CurrentUser UserDetails userDetails,
             @Valid @RequestBody CreateSentencePatternRequest request
     ) {
-        String userId = getUserId(userDetails);
-        SentencePatternDto pattern = sentencePatternService.createSentencePattern(request);
+        com.learnsinhala.model.User user = getUser(userDetails);
+        SentencePatternDto pattern = sentencePatternService.createSentencePattern(user, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(pattern);
     }
 
@@ -110,8 +110,8 @@ public class SentencePatternController {
             @PathVariable String id,
             @Valid @RequestBody UpdateSentencePatternRequest request
     ) {
-        String userId = getUserId(userDetails);
-        SentencePatternDto pattern = sentencePatternService.updateSentencePattern(id, request);
+        com.learnsinhala.model.User user = getUser(userDetails);
+        SentencePatternDto pattern = sentencePatternService.updateSentencePattern(user, id, request);
         return ResponseEntity.ok(pattern);
     }
 
@@ -125,15 +125,14 @@ public class SentencePatternController {
             @CurrentUser UserDetails userDetails,
             @PathVariable String id
     ) {
-        String userId = getUserId(userDetails);
-        sentencePatternService.deleteSentencePattern(id);
+        com.learnsinhala.model.User user = getUser(userDetails);
+        sentencePatternService.deleteSentencePattern(user, id);
         return ResponseEntity.noContent().build();
     }
 
-    private String getUserId(UserDetails userDetails) {
+    private com.learnsinhala.model.User getUser(UserDetails userDetails) {
         return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> ApiException.unauthorized("User not found"))
-                .getId();
+                .orElseThrow(() -> ApiException.unauthorized("User not found"));
     }
 
     private Category parseCategory(String category) {

@@ -26,6 +26,7 @@ import com.learnsinhala.dto.vocabulary.VocabularyListResponse;
 import com.learnsinhala.exception.ApiException;
 import com.learnsinhala.model.Category;
 import com.learnsinhala.model.Difficulty;
+import com.learnsinhala.model.User;
 import com.learnsinhala.repository.UserRepository;
 import com.learnsinhala.security.CurrentUser;
 import com.learnsinhala.service.VocabularyService;
@@ -72,9 +73,11 @@ public class VocabularyController {
         Category cat = parseCategory(category);
         Difficulty diff = parseDifficulty(difficulty);
 
+        User user = getUser(userDetails);
+
         VocabularyListResponse response = vocabularyService.listVocabulary(
-                userId, cat, diff, page, size
-        );
+                user, cat, diff, page, size
+);
 
         return ResponseEntity.ok(response);
     }
@@ -89,8 +92,8 @@ public class VocabularyController {
             @CurrentUser UserDetails userDetails,
             @PathVariable String id
     ) {
-        String userId = getUserId(userDetails);
-        VocabularyDto vocab = vocabularyService.getVocabulary(userId, id);
+        User user = getUser(userDetails);
+        VocabularyDto vocab = vocabularyService.getVocabulary(user, id);
         return ResponseEntity.ok(vocab);
     }
 
@@ -114,8 +117,8 @@ public class VocabularyController {
             @CurrentUser UserDetails userDetails,
             @Valid @RequestBody CreateVocabularyRequest request
     ) {
-        String userId = getUserId(userDetails);
-        VocabularyDto vocab = vocabularyService.createVocabulary(request);
+        User user = getUser(userDetails);
+        VocabularyDto vocab = vocabularyService.createVocabulary(user, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(vocab);
     }
 
@@ -136,8 +139,8 @@ public class VocabularyController {
             @PathVariable String id,
             @Valid @RequestBody UpdateVocabularyRequest request
     ) {
-        String userId = getUserId(userDetails);
-        VocabularyDto vocab = vocabularyService.updateVocabulary(id, request);
+        User user = getUser(userDetails);
+        VocabularyDto vocab = vocabularyService.updateVocabulary(user, id, request);
         return ResponseEntity.ok(vocab);
     }
 
@@ -151,8 +154,8 @@ public class VocabularyController {
             @CurrentUser UserDetails userDetails,
             @PathVariable String id
     ) {
-        String userId = getUserId(userDetails);
-        vocabularyService.deleteVocabulary(id);
+        User user = getUser(userDetails);
+        vocabularyService.deleteVocabulary(user, id);
         return ResponseEntity.noContent().build();
     }
 
@@ -191,7 +194,7 @@ public class VocabularyController {
             @CurrentUser UserDetails userDetails,
             @RequestParam("file") MultipartFile file
     ) {
-        String userId = getUserId(userDetails);
+        User user = getUser(userDetails);
 
         // Validate file
         if (file.isEmpty()) {
@@ -214,7 +217,7 @@ public class VocabularyController {
         }
 
         // Import vocabulary
-        CsvUploadResponse response = vocabularyService.importFromCsv(file);
+        CsvUploadResponse response = vocabularyService.importFromCsv(user, file);
 
         return ResponseEntity.ok(response);
     }
@@ -265,10 +268,13 @@ public class VocabularyController {
         return ResponseEntity.ok(Difficulty.values());
     }
 
-    private String getUserId(UserDetails userDetails) {
+    private User getUser(UserDetails userDetails) {
         return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> ApiException.unauthorized("User not found"))
-                .getId();
+                .orElseThrow(() -> ApiException.unauthorized("User not found"));
+    }
+
+    private String getUserId(UserDetails userDetails) {
+        return getUser(userDetails).getId();
     }
 
     private Category parseCategory(String category) {

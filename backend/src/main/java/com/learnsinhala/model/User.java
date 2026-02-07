@@ -41,6 +41,10 @@ public class User {
 
     private String displayName;
 
+    @Indexed
+    @Builder.Default
+    private Role role = Role.USER;
+
     @Builder.Default
     private boolean enabled = true;
 

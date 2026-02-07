@@ -1,3 +1,5 @@
+import { Role } from './role.enum';
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -15,6 +17,7 @@ export interface AuthResponse {
   tokenType: string;
   email: string;
   displayName: string;
+  role: string;  // Role as string from backend
 }
 
 export interface User {
@@ -22,6 +25,7 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
+  role: Role;  // User's role
   preferences: UserPreferences;
   createdAt: string;
 }

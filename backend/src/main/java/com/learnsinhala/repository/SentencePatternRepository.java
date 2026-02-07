@@ -29,4 +29,6 @@ public interface SentencePatternRepository extends MongoRepository<SentencePatte
     long countByCategory(Category category);
 
     long countByDifficulty(Difficulty difficulty);
+
+    long countByCreatedBy(String createdBy);
 }

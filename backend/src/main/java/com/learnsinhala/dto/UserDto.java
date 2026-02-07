@@ -1,5 +1,6 @@
 package com.learnsinhala.dto;
 
+import com.learnsinhala.model.Role;
 import com.learnsinhala.model.User;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private String email;
+    private Role role;
     private UserPreferencesDto preferences;
     private Instant createdAt;
 
@@ -28,6 +30,7 @@ public class UserDto {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
+                .role(user.getRole())
                 .preferences(UserPreferencesDto.from(user.getPreferences()))
                 .createdAt(user.getCreatedAt())
                 .build();

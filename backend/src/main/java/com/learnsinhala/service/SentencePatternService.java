@@ -13,7 +13,9 @@ import com.learnsinhala.exception.ApiException;
 import com.learnsinhala.model.Category;
 import com.learnsinhala.model.Difficulty;
 import com.learnsinhala.model.SentencePattern;
+import com.learnsinhala.model.Role;
 import com.learnsinhala.repository.SentencePatternRepository;
+import com.learnsinhala.security.RoleValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +33,16 @@ public class SentencePatternService {
 
     /**
      * List sentence patterns with optional filters and pagination.
+     * NEW RBAC: Everyone can view all content.
      */
     public List<SentencePatternDto> listSentencePatterns(
+            com.learnsinhala.model.User user,
             Category category,
             Difficulty difficulty,
             Integer page,
             Integer size
     ) {
+        // Everyone sees all content - no role-based filtering
         Page<SentencePattern> patternsPage;
         
         if (page != null && size != null) {
@@ -58,18 +63,26 @@ public class SentencePatternService {
 
     /**
      * Get a single sentence pattern by ID.
+     * NEW RBAC: Everyone can view.
      */
-    public SentencePatternDto getSentencePattern(String id) {
+    public SentencePatternDto getSentencePattern(com.learnsinhala.model.User user, String id) {
         SentencePattern pattern = sentencePatternRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Sentence pattern not found"));
 
+        // Everyone can view - no permission check needed
         return SentencePatternDto.from(pattern);
     }
 
     /**
      * Create new sentence pattern.
+     * NEW RBAC: USER sets createdBy=userId, ADMIN/SUPERADMIN sets createdBy=null.
      */
-    public SentencePatternDto createSentencePattern(CreateSentencePatternRequest request) {
+    public SentencePatternDto createSentencePattern(com.learnsinhala.model.User user, CreateSentencePatternRequest request) {
+        // Set createdBy based on role:
+        // - USER: userId (for ownership tracking)
+        // - ADMIN/SUPERADMIN: null (admin content)
+        String createdBy = (user.getRole() == Role.USER) ? user.getId() : null;
+
         SentencePattern pattern = SentencePattern.builder()
                 .name(request.getName())
                 .sinhalaPattern(request.getSinhalaPattern())
@@ -80,22 +93,30 @@ public class SentencePatternService {
                 .difficulty(request.getDifficulty())
                 .examples(request.getExamples() != null ? request.getExamples() : new ArrayList<>())
                 .audioUrl(request.getAudioUrl())
+                .createdBy(createdBy)  // null for ADMIN+, userId for USER
                 .build();
 
         pattern = sentencePatternRepository.save(pattern);
 
-        log.info("Created new sentence pattern: {} ({})", pattern.getName(), pattern.getId());
+        log.info("Created new sentence pattern: {} ({}) by {}", pattern.getName(), pattern.getId(), 
+                 createdBy != null ? createdBy : "admin");
 
         return SentencePatternDto.from(pattern);
     }
 
     /**
      * Update existing sentence pattern.
+     * NEW RBAC: Only creator can edit.
      * Only updates fields that are provided (non-null).
      */
-    public SentencePatternDto updateSentencePattern(String id, UpdateSentencePatternRequest request) {
+    public SentencePatternDto updateSentencePattern(com.learnsinhala.model.User user, String id, UpdateSentencePatternRequest request) {
         SentencePattern pattern = sentencePatternRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Sentence pattern not found"));
+
+        // Check edit permission: only creator can edit
+        if (!RoleValidator.canEditContent(user, pattern.getCreatedBy())) {
+            throw ApiException.forbidden("You don't have permission to edit this sentence pattern");
+        }
 
         // Update only provided fields
         if (request.getName() != null) {
@@ -135,10 +156,15 @@ public class SentencePatternService {
 
     /**
      * Delete sentence pattern.
+     * NEW RBAC: Only creator can delete.
      */
-    public void deleteSentencePattern(String id) {
-        if (!sentencePatternRepository.existsById(id)) {
-            throw ApiException.notFound("Sentence pattern not found");
+    public void deleteSentencePattern(com.learnsinhala.model.User user, String id) {
+        SentencePattern pattern = sentencePatternRepository.findById(id)
+                .orElseThrow(() -> ApiException.notFound("Sentence pattern not found"));
+
+        // Check delete permission: only creator can delete
+        if (!RoleValidator.canDeleteContent(user, pattern.getCreatedBy())) {
+            throw ApiException.forbidden("You don't have permission to delete this sentence pattern");
         }
 
         sentencePatternRepository.deleteById(id);

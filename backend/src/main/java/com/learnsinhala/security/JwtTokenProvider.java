@@ -15,6 +15,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.learnsinhala.config.AppProperties;
+import com.learnsinhala.model.Role;
+import com.learnsinhala.model.User;
+import com.learnsinhala.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +32,7 @@ public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     private final AppProperties appProperties;
+    private final UserRepository userRepository;
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = appProperties.getJwt().getSecret().getBytes(StandardCharsets.UTF_8);
@@ -41,11 +45,16 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(String email) {
+        // Load user to get role for JWT claims
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + appProperties.getJwt().getExpirationMs());
 
         return Jwts.builder()
                 .subject(email)
+                .claim("role", user.getRole().name())  // Add role to JWT claims
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -60,6 +69,24 @@ public class JwtTokenProvider {
                 .getPayload();
 
         return claims.getSubject();
+    }
+
+    /**
+     * Extract role from JWT token.
+     * Returns USER as default if role claim is missing.
+     */
+    public Role getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        String roleName = claims.get("role", String.class);
+        if (roleName == null) {
+            return Role.USER; // Default for old tokens without role
+        }
+        return Role.valueOf(roleName);
     }
 
     public boolean validateToken(String token) {

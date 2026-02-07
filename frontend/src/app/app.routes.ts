@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@core/guards/auth.guard';
 import { guestGuard } from '@core/guards/guest.guard';
+import { adminGuard } from '@core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -85,6 +86,13 @@ export const routes: Routes = [
     loadComponent: () => import('@features/sentence-builder/sentence-builder.component')
       .then(m => m.SentenceBuilderComponent),
     canActivate: [authGuard]
+  },
+  // Admin routes
+  {
+    path: 'admin/users',
+    loadComponent: () => import('@features/admin/components/user-management.component')
+      .then(m => m.UserManagementComponent),
+    canActivate: [authGuard, adminGuard]
   },
   {
     path: '**',

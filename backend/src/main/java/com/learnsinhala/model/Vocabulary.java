@@ -88,6 +88,14 @@ public class Vocabulary {
     @Builder.Default
     private List<String> tags = new ArrayList<>();
 
+    /**
+     * User ID of the creator. Used for RBAC.
+     * - USER role can only view/edit/delete their own content
+     * - ADMIN and SUPERADMIN can view/edit/delete all content
+     */
+    @Indexed
+    private String createdBy;
+
     @CreatedDate
     private Instant createdAt;
 
