@@ -71,16 +71,15 @@ services:
       dockerfile: Dockerfile
     container_name: learnsinhala-frontend-prod
     restart: always
+    environment:
+      # Backend URL for nginx proxy
+      BACKEND_URL: ${BACKEND_URL:-http://backend:8080}
     depends_on:
       backend:
         condition: service_healthy
     ports:
       - "${FRONTEND_PORT:-80}:80"
       - "443:443"
-    volumes:
-      # Mount SSL certificates if using HTTPS
-      # - ./docker/ssl:/etc/nginx/ssl:ro
-      - ./docker/nginx-prod.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - learnsinhala-prod-network
     healthcheck:
