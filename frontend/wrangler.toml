@@ -1,0 +1,7 @@
+name = "learn-sinhala"
+compatibility_date = "2026-02-08"
+
+pages_build_output_dir = "dist/learn-sinhala/browser"
+
+[site]
+bucket = "dist/learn-sinhala/browser"
