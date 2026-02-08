@@ -37,8 +37,9 @@ yarn-error.log*
 # Environment / Secrets
 # =========================
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env.prod.example
 *.pem
 *.key
 
@@ -66,3 +67,11 @@ Thumbs.db
 coverage/
 *.lcov
 .nyc_output/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+backend_logs.txt
+mongodb_startup.log

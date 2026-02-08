@@ -21,9 +21,14 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
               <h1>Vocabulary</h1>
               <p>Browse and learn Sinhala words</p>
             </div>
-            <button class="btn btn-primary" [routerLink]="['/vocabulary/new']">
-              + Add New Vocabulary
-            </button>
+            <div class="header-actions">
+              <button class="btn btn-secondary" [routerLink]="['/vocabulary/import']">
+                📥 Import CSV
+              </button>
+              <button class="btn btn-primary" [routerLink]="['/vocabulary/new']">
+                + Add New Vocabulary
+              </button>
+            </div>
           </div>
         </header>
 
@@ -155,6 +160,11 @@ import { Vocabulary, Category, Difficulty } from '@core/models/vocabulary.model'
       justify-content: space-between;
       align-items: center;
       gap: 1rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
     }
 
     .page-header p {

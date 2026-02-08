@@ -1,461 +1,202 @@
-# Learn Sinhala
+# Learn Sinhala Application
 
-A web application designed to help Tamil speakers learn spoken Sinhala through interactive vocabulary practice, spaced repetition, and sentence building.
+A full-stack Sinhala learning application for Tamil speakers.
 
-## Purpose
-
-This project addresses the need for Tamil speakers in Sri Lanka (and elsewhere) to learn conversational Sinhala. Unlike traditional language learning apps that focus on formal written language, this app emphasizes:
-
-- **Spoken Sinhala** - Real phrases used in daily Sri Lankan life
-- **Romanized text** - No Sinhala script required; learn to speak, not read
-- **Tamil translations** - Leverage your Tamil knowledge to learn faster
-- **Practical vocabulary** - Shopping, travel, food, greetings, emergencies
+> 🎵 **Fun fact**: This entire project was vibe coded! 🚀
 
 ## Tech Stack
 
-### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Java | 21 | Runtime |
-| Spring Boot | 3.2.x | Web framework |
-| Spring Security | 6.x | Authentication |
-| Spring Data MongoDB | - | Database access |
-| JWT (jjwt) | 0.12.x | Token authentication |
-| Lombok | - | Boilerplate reduction |
-| Maven | 3.9+ | Build tool |
+- **Frontend**: Angular + Nginx
+- **Backend**: Spring Boot + MongoDB Atlas
+- **Auth**: JWT
+- **Deployment**: Docker + Docker Compose
 
-### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Angular | 18.x | UI framework |
-| TypeScript | 5.x | Language |
-| RxJS | 7.x | Reactive programming |
-| Angular Signals | - | State management |
+## Quick Start
 
-### Database
-| Technology | Purpose |
-|------------|---------|
-| MongoDB | Document storage |
+### Local Development
+
+1. Copy environment file:
+```bash
+cp .env.example .env
+```
+
+2. Update `.env` with your credentials
+
+3. Start all services:
+```bash
+docker-compose up
+```
+
+4. Access:
+   - Frontend: http://localhost
+   - Backend API: http://localhost:8080/api
+
+### Production Deployment
+
+See [ENV_SETUP.md](./ENV_SETUP.md) for detailed environment configuration.
+
+1. Copy production environment:
+```bash
+cp .env.prod.example .env.prod
+```
+
+2. Update `.env.prod` with:
+   - MongoDB Atlas connection string
+   - Strong JWT secret (generate with `openssl rand -base64 64`)
+
+3. Deploy:
+```bash
+docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
+```
+
+4. Check status:
+```bash
+docker ps
+docker logs -f learnsinhala-backend-prod
+docker logs -f learnsinhala-frontend-prod
+```
+
+## Environment Variables
+
+See:
+- [.env.example](./.env.example) - Local development
+- [.env.prod.example](./.env.prod.example) - Production
+- [ENV_SETUP.md](./ENV_SETUP.md) - Detailed setup guide
+- [MONGODB_ATLAS.md](./MONGODB_ATLAS.md) - MongoDB Atlas setup
+
+**Critical for Production**:
+- `MONGODB_URI`: MongoDB Atlas connection string
+- `JWT_SECRET`: Generate with `openssl rand -base64 64`
+- `BACKEND_VERSION` & `FRONTEND_VERSION`: Image version tags
+
+## Features
+
+- ✅ User authentication (JWT)
+- ✅ Vocabulary management (CRUD)
+- ✅ Practice sessions with audio
+- ✅ Sentence builder
+- ✅ Progress tracking & statistics
+- ✅ Content Security Policy (Google Fonts support)
 
 ## Project Structure
 
 ```
-learn-sinhala/
-├── backend/                 # Spring Boot API
-│   ├── src/main/java/
-│   │   └── com/learnsinhala/
-│   │       ├── config/      # Security, CORS, data seeding
-│   │       ├── controller/  # REST endpoints
-│   │       ├── model/       # MongoDB documents
-│   │       ├── repository/  # Data access
-│   │       ├── security/    # JWT authentication
-│   │       └── service/     # Business logic
-│   └── src/main/resources/
-│       └── application.yml  # Configuration
-│
-├── frontend/                # Angular SPA
-│   └── src/
-│       ├── app/
-│       │   ├── core/        # Services, guards, interceptors
-│       │   ├── features/    # Page components
-│       │   └── shared/      # Reusable components
-│       └── environments/    # Environment configs
-│
-├── storage/                 # Local file storage (audio)
-│   └── audio/
-│
-└── README.md
+.
+├── backend/                    # Spring Boot API
+│   ├── src/                   # Java source code
+│   ├── Dockerfile             # Backend container
+│   └── pom.xml                # Maven dependencies
+├── frontend/                   # Angular SPA
+│   ├── src/                   # TypeScript source
+│   ├── nginx.conf             # Nginx config (dev)
+│   └── Dockerfile             # Frontend container
+├── docker/                     # Docker configurations
+│   └── nginx-prod.conf        # Production nginx config
+├── .env.example               # Local environment template
+├── .env.prod.example          # Production template
+├── docker-compose.yml         # Local dev setup
+└── docker-compose.prod.yml    # Production setup
 ```
 
-## Prerequisites
+## Docker Commands
 
-- **Java 21** - [Download](https://adoptium.net/)
-- **Node.js 20+** - [Download](https://nodejs.org/)
-- **MongoDB 7+** - [Download](https://www.mongodb.com/try/download/community) or use [MongoDB Atlas](https://www.mongodb.com/atlas)
-- **Maven 3.9+** - [Download](https://maven.apache.org/download.cgi)
-- **Docker** (optional) - [Download](https://www.docker.com/products/docker-desktop/)
-
-## Quick Start with Docker
-
-The fastest way to run the entire stack:
-
-### 1. Clone and Configure
-
+### Local Development
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/learn-sinhala.git
-cd learn-sinhala
+# Start all services
+docker-compose up
 
-# Copy environment template
-cp .env.example .env
-
-# Edit .env and set secure passwords
-```
-
-### 2. Run with Docker Compose
-
-```bash
-# Build and start all services
+# Start in background
 docker-compose up -d
 
 # View logs
 docker-compose logs -f
 
-# Stop all services
+# Stop all
 docker-compose down
-```
 
-The application will be available at:
-- **Frontend**: http://localhost:80
-- **Backend API**: http://localhost:8080/api
-- **MongoDB**: localhost:27017
-
-### Docker Compose Files
-
-| File | Purpose |
-|------|---------|
-| `docker-compose.yml` | Default full stack |
-| `docker-compose.dev.yml` | Development (MongoDB + Mongo Express only) |
-| `docker-compose.prod.yml` | Production with optimizations |
-
-### Development with Docker (Database Only)
-
-Run only MongoDB while developing locally:
-
-```bash
-# Start MongoDB + Mongo Express UI
-docker-compose -f docker-compose.dev.yml up -d
-
-# Access Mongo Express at http://localhost:8081
-# Login: admin / admin
-
-# Run backend locally
-cd backend && ./mvnw spring-boot:run
-
-# Run frontend locally
-cd frontend && npm start
-```
-
-### Production Deployment
-
-```bash
-# Set production environment variables
-export MONGO_ROOT_PASSWORD=secure-password-here
-export MONGO_PASSWORD=secure-app-password
-export JWT_SECRET=$(openssl rand -base64 64)
-
-# Build and deploy
-docker-compose -f docker-compose.prod.yml up -d --build
-```
-
-### Docker Commands Reference
-
-```bash
-# Rebuild a specific service
-docker-compose build backend
-
-# View running containers
-docker-compose ps
-
-# Shell into a container
-docker-compose exec backend sh
-docker-compose exec mongodb mongosh
-
-# View logs for specific service
-docker-compose logs -f backend
-
-# Remove all containers and volumes (WARNING: deletes data)
+# Remove volumes (fresh start)
 docker-compose down -v
 ```
 
----
+### Production
+```bash
+# Build and start
+docker-compose -f docker-compose.prod.yml --env-file .env.prod up --build -d
 
-## Running the Backend
+# View logs
+docker logs -f learnsinhala-backend-prod
+docker logs -f learnsinhala-frontend-prod
 
-### 1. Start MongoDB
+# Stop services
+docker-compose -f docker-compose.prod.yml --env-file .env.prod down
+
+# Restart specific service
+docker-compose -f docker-compose.prod.yml --env-file .env.prod restart frontend
+```
+
+### Building Docker Images
 
 ```bash
-# Local MongoDB
-mongod --dbpath /path/to/data
+# Build backend
+docker-compose -f docker-compose.prod.yml --env-file .env.prod build backend
 
-# Or use Docker
-docker run -d -p 27017:27017 --name mongodb mongo:7
+# Build frontend
+docker-compose -f docker-compose.prod.yml --env-file .env.prod build frontend
+
+# Build both
+docker-compose -f docker-compose.prod.yml --env-file .env.prod build
 ```
 
-### 2. Configure Environment
-
-Create or edit `backend/src/main/resources/application.yml`:
-
-```yaml
-spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/learnsinhala
-  profiles:
-    active: dev  # Enables data seeding
-
-jwt:
-  secret: your-256-bit-secret-key-here-make-it-long-and-random
-  expiration: 86400000  # 24 hours
-
-storage:
-  local:
-    path: ../storage
-```
-
-### 3. Run the Application
+### Push to DockerHub
 
 ```bash
-cd backend
+# Push backend
+docker-compose -f docker-compose.prod.yml --env-file .env.prod push backend
 
-# Using Maven
-./mvnw spring-boot:run
+# Push frontend
+docker-compose -f docker-compose.prod.yml --env-file .env.prod push frontend
 
-# Or build and run JAR
-./mvnw clean package
-java -jar target/learn-sinhala-0.0.1-SNAPSHOT.jar
+# Push both
+docker-compose -f docker-compose.prod.yml --env-file .env.prod push
 ```
 
-The API will be available at `http://localhost:8080/api`
+## Architecture
 
-### 4. Verify Setup
-
-```bash
-# Health check
-curl http://localhost:8080/api/health
-
-# Register a user
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"testuser","email":"test@example.com","password":"password123","displayName":"Test User"}'
-
-# Login
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"password123"}'
+```
+┌─────────────────────┐
+│   User's Browser    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Nginx Container    │  ← Serves Angular + Proxies API
+│  (Frontend)         │
+└──────────┬──────────┘
+           │ /api/*
+           ▼
+┌─────────────────────┐
+│  Spring Boot        │  ← REST API
+│  (Backend)          │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  MongoDB Atlas      │  ← Cloud Database
+└─────────────────────┘
 ```
 
-## Running the Frontend
+## Development Notes
 
-### 1. Install Dependencies
-
-```bash
-cd frontend
-npm install
-```
-
-### 2. Configure Environment
-
-Edit `frontend/src/environments/environment.ts` if needed:
-
-```typescript
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api'
-};
-```
-
-### 3. Start Development Server
-
-```bash
-npm start
-# or
-ng serve
-```
-
-The app will be available at `http://localhost:4200`
-
-### 4. Build for Production
-
-```bash
-npm run build
-# Output in frontend/dist/
-```
-
-## API Endpoints
-
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login and get JWT |
-
-### Vocabulary
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/vocabulary` | List vocabulary (with filters) |
-| GET | `/api/vocabulary/:id` | Get single item |
-| GET | `/api/vocabulary/categories` | List categories |
-| POST | `/api/vocabulary/:id/progress` | Update learning progress |
-
-### Practice
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/practice/today` | Get today's practice session |
-| POST | `/api/practice/answer` | Submit practice answer |
-
-### User
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users/me` | Get current user profile |
-
-## Features
-
-### Current Features
-
-- **User Authentication** - Register, login, JWT-based sessions
-- **Vocabulary Browser** - Filter by category and difficulty
-- **Flashcard Practice** - Spaced repetition learning
-- **Progress Tracking** - Track mastered vs learning words
-- **Sentence Builder** - Build sentences from patterns
-- **Audio Support** - Pronunciation audio playback
-- **Keyboard Navigation** - Space to reveal, 1/2 to rate
-
-### Learning Flow
-
-1. **Browse Vocabulary** - Explore words by category
-2. **Daily Practice** - Review due words + learn new ones
-3. **Rate Knowledge** - "Got it" or "Didn't know"
-4. **Spaced Repetition** - Algorithm schedules optimal review times
-5. **Build Sentences** - Practice with sentence patterns
-
-## Roadmap
-
-### Phase 1: Core Features (Current)
-- [x] User authentication
-- [x] Vocabulary management
-- [x] Flashcard practice
-- [x] Spaced repetition algorithm
-- [x] Sentence builder
-- [x] 50 common phrases seed data
-
-### Phase 2: Enhanced Learning
-- [ ] Audio recording for pronunciation comparison
-- [ ] Quiz mode with multiple choice
-- [ ] Daily streaks and achievements
-- [ ] Lesson-based curriculum
-- [ ] Grammar tips and explanations
-
-### Phase 3: Social Features
-- [ ] Leaderboards
-- [ ] Share progress on social media
-- [ ] Community-contributed phrases
-- [ ] Native speaker audio contributions
-
-### Phase 4: Mobile & Offline
-- [ ] Progressive Web App (PWA)
-- [ ] Offline mode with sync
-- [ ] Native mobile app (Capacitor/React Native)
-- [ ] Push notifications for practice reminders
-
-### Phase 5: Advanced Features
-- [ ] AI-powered pronunciation feedback
-- [ ] Conversation practice with AI
-- [ ] Regional dialect variations
-- [ ] Integration with Tamil-Sinhala dictionary API
-
-## Development
-
-### Backend Development
-
-```bash
-cd backend
-
-# Run tests
-./mvnw test
-
-# Run with hot reload
-./mvnw spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.devtools.restart.enabled=true"
-
-# Generate API docs (if Swagger added)
-./mvnw springdoc-openapi:generate
-```
-
-### Frontend Development
-
-```bash
-cd frontend
-
-# Run tests
-npm test
-
-# Run e2e tests
-npm run e2e
-
-# Lint
-npm run lint
-
-# Format
-npm run format
-```
-
-### Code Style
-
-- **Backend**: Follow [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
-- **Frontend**: ESLint + Prettier (configured)
-
-## Environment Variables
-
-### Backend (application.yml or env vars)
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/learnsinhala` |
-| `JWT_SECRET` | Secret key for JWT signing | (required) |
-| `JWT_EXPIRATION` | Token expiration in ms | `86400000` |
-| `STORAGE_PATH` | Local file storage path | `../storage` |
-
-### Frontend (environment.ts)
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `apiUrl` | Backend API URL | `http://localhost:8080/api` |
-| `production` | Production mode flag | `false` |
-
-## Troubleshooting
-
-### MongoDB Connection Issues
-
-```bash
-# Check if MongoDB is running
-mongosh --eval "db.adminCommand('ping')"
-
-# Check connection string in application.yml
-```
-
-### CORS Errors
-
-Ensure backend CORS config includes your frontend URL:
-```yaml
-# application.yml
-cors:
-  allowed-origins: http://localhost:4200
-```
-
-### JWT Token Issues
-
-- Check token expiration time
-- Ensure secret key is consistent
-- Clear browser localStorage and re-login
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- **Frontend**: Angular 19 with standalone components
+- **Backend**: Spring Boot 3.2.1 with Java 21
+- **Database**: MongoDB Atlas (production) or local MongoDB (dev)
+- **Nginx**: Handles static files + API proxy (no CORS needed)
+- **CSP**: Configured to allow Google Fonts while maintaining security
 
 ## License
 
-This project is for personal/educational use. See [LICENSE](LICENSE) for details.
+Private - All Rights Reserved
 
-## Acknowledgments
+## Author
 
-- Sri Lankan Sinhala speakers who provided authentic phrases
-- Tamil-speaking community for feedback on translations
-- Open source community for the amazing tools
-
----
-
-**Learn to speak Sinhala, one phrase at a time!**
+Built with ☕ and 🎵 vibes

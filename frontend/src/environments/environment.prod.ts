@@ -3,7 +3,9 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8080/api',
+  // Absolute URL for separate deployment (Cloudflare Pages + Google Cloud Run)
+  // NOTE: CORS must be configured on backend to allow Cloudflare domain
+  apiUrl: 'https://learn-sinhala-backend-809391430909.asia-south1.run.app/api',
 
   // API settings
   api: {

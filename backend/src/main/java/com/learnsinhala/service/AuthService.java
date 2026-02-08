@@ -65,7 +65,7 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(user.getEmail());
 
         String displayName = user.getFirstName() + " " + user.getLastName();
-        return AuthResponse.of(token, user.getEmail(), displayName);
+        return AuthResponse.of(token, user.getEmail(), displayName, user.getRole().name());
     }
 
     /**
@@ -96,6 +96,6 @@ public class AuthService {
         log.info("User logged in successfully: {}", user.getEmail());
 
         String displayName = user.getFirstName() + " " + user.getLastName();
-        return AuthResponse.of(token, user.getEmail(), displayName);
+        return AuthResponse.of(token, user.getEmail(), displayName, user.getRole().name());
     }
 }

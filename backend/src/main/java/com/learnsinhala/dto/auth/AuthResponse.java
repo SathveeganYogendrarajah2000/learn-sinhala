@@ -15,13 +15,15 @@ public class AuthResponse {
     private String tokenType;
     private String email;
     private String displayName;
+    private String role;
 
-    public static AuthResponse of(String token, String email, String displayName) {
+    public static AuthResponse of(String token, String email, String displayName, String role) {
         return AuthResponse.builder()
                 .token(token)
                 .tokenType("Bearer")
                 .email(email)
                 .displayName(displayName)
+                .role(role)
                 .build();
     }
 }

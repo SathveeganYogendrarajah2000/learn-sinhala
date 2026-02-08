@@ -39,7 +39,9 @@ public class Vocabulary {
 
     /**
      * Romanized Sinhala word/phrase (e.g., "kohomada" for "how are you")
+     * Unique to prevent duplicate entries.
      */
+    @Indexed(unique = true)
     private String sinhala;
 
     /**
@@ -85,6 +87,14 @@ public class Vocabulary {
     @Indexed
     @Builder.Default
     private List<String> tags = new ArrayList<>();
+
+    /**
+     * User ID of the creator. Used for RBAC.
+     * - USER role can only view/edit/delete their own content
+     * - ADMIN and SUPERADMIN can view/edit/delete all content
+     */
+    @Indexed
+    private String createdBy;
 
     @CreatedDate
     private Instant createdAt;

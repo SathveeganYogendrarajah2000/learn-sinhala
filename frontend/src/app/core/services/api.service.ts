@@ -160,6 +160,19 @@ export class ApiService {
     return this.http.delete<void>(`${this.apiUrl}/vocabulary/${id}`);
   }
 
+  /**
+   * Import vocabulary items from CSV file.
+   */
+  importCsvVocabulary(file: File): Observable<CsvUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<CsvUploadResponse>(
+      `${this.apiUrl}/vocabulary/import`,
+      formData
+    );
+  }
+
   // ========================
   // Sentence Patterns
   // ========================
@@ -259,6 +272,21 @@ export class ApiService {
       { action }
     );
   }
+}
+
+export interface CsvUploadResponse {
+  totalRows: number;
+  successCount: number;
+  errorCount: number;
+  createdIds: string[];
+  errors: CsvRowError[];
+}
+
+export interface CsvRowError {
+  rowNumber: number;
+  field?: string;
+  message: string;
+  rawData?: string;
 }
 
 export interface ProgressUpdateResponse {
