@@ -3,8 +3,9 @@
  */
 export const environment = {
   production: true,
-  // Use relative URL - nginx will proxy to backend (no CORS, no CSP issues)
-  apiUrl: '/api',
+  // Absolute URL for separate deployment (Cloudflare Pages + Google Cloud Run)
+  // NOTE: CORS must be configured on backend to allow Cloudflare domain
+  apiUrl: 'https://learn-sinhala-backend-809391430909.asia-south1.run.app/api',
 
   // API settings
   api: {
