@@ -5,14 +5,16 @@
 
 set -e
 
-# Default backend URL if not provided
+# Defaults (Cloud Run injects PORT; BACKEND_URL used in local docker-compose)
+export PORT=${PORT:-8080}
 export BACKEND_URL=${BACKEND_URL:-http://backend:8080}
 
 echo "🚀 Starting Learn Sinhala Frontend..."
+echo "🔌 Listening on port: $PORT"
 echo "📡 Backend URL: $BACKEND_URL"
 
 # Substitute environment variables in nginx config
-envsubst '${BACKEND_URL}' < /etc/nginx/conf.d/nginx.conf.template > /etc/nginx/conf.d/default.conf
+envsubst '${PORT} ${BACKEND_URL}' < /etc/nginx/conf.d/nginx.conf.template > /etc/nginx/conf.d/default.conf
 
 echo "✅ Nginx configuration generated"
 

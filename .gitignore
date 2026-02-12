@@ -50,12 +50,6 @@ storage/audio/*
 !storage/audio/.gitkeep
 
 # =========================
-# Docker
-# =========================
-docker/data/
-docker/ssl/
-
-# =========================
 # OS Files
 # =========================
 .DS_Store
@@ -73,5 +67,3 @@ coverage/
 # =========================
 *.log
 logs/
-backend_logs.txt
-mongodb_startup.log

@@ -1,4 +1,4 @@
-# Learn Sinhala Application
+# Learn Sinhala
 
 A full-stack Sinhala learning application for Tamil speakers.
 
@@ -6,77 +6,43 @@ A full-stack Sinhala learning application for Tamil speakers.
 
 ## Tech Stack
 
-- **Frontend**: Angular + Nginx
-- **Backend**: Spring Boot + MongoDB Atlas
+- **Frontend**: Angular 19 + Nginx
+- **Backend**: Spring Boot 3 + Java 21
+- **Database**: MongoDB Atlas
 - **Auth**: JWT
-- **Deployment**: Docker + Docker Compose
+- **Hosting**: Google Cloud Run
+- **Registry**: DockerHub
 
-## Quick Start
+## Architecture
 
-### Local Development
-
-1. Copy environment file:
-```bash
-cp .env.example .env
+```
+┌─────────────────────┐
+│   User's Browser    │
+└──────────┬──────────┘
+           │
+     ┌─────┴──────┐
+     │             │
+     ▼             ▼
+┌──────────┐  ┌──────────┐
+│ Frontend │  │ Backend  │   ← Separate Cloud Run services
+│ (Nginx)  │  │ (Spring) │
+└──────────┘  └────┬─────┘
+                   │
+                   ▼
+            ┌──────────────┐
+            │ MongoDB Atlas│   ← Cloud Database
+            └──────────────┘
 ```
 
-2. Update `.env` with your credentials
-
-3. Start all services:
-```bash
-docker-compose up
-```
-
-4. Access:
-   - Frontend: http://localhost
-   - Backend API: http://localhost:8080/api
-
-### Production Deployment
-
-See [ENV_SETUP.md](./ENV_SETUP.md) for detailed environment configuration.
-
-1. Copy production environment:
-```bash
-cp .env.prod.example .env.prod
-```
-
-2. Update `.env.prod` with:
-   - MongoDB Atlas connection string
-   - Strong JWT secret (generate with `openssl rand -base64 64`)
-
-3. Deploy:
-```bash
-docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
-```
-
-4. Check status:
-```bash
-docker ps
-docker logs -f learnsinhala-backend-prod
-docker logs -f learnsinhala-frontend-prod
-```
-
-## Environment Variables
-
-See:
-- [.env.example](./.env.example) - Local development
-- [.env.prod.example](./.env.prod.example) - Production
-- [ENV_SETUP.md](./ENV_SETUP.md) - Detailed setup guide
-- [MONGODB_ATLAS.md](./MONGODB_ATLAS.md) - MongoDB Atlas setup
-
-**Critical for Production**:
-- `MONGODB_URI`: MongoDB Atlas connection string
-- `JWT_SECRET`: Generate with `openssl rand -base64 64`
-- `BACKEND_VERSION` & `FRONTEND_VERSION`: Image version tags
+The frontend calls the backend API directly via its Cloud Run URL (no nginx proxy in production).
 
 ## Features
 
 - ✅ User authentication (JWT)
-- ✅ Vocabulary management (CRUD)
+- ✅ Vocabulary management (CRUD + CSV upload)
 - ✅ Practice sessions with audio
 - ✅ Sentence builder
 - ✅ Progress tracking & statistics
-- ✅ Content Security Policy (Google Fonts support)
 
 ## Project Structure
 
@@ -88,110 +54,148 @@ See:
 │   └── pom.xml                # Maven dependencies
 ├── frontend/                   # Angular SPA
 │   ├── src/                   # TypeScript source
-│   ├── nginx.conf             # Nginx config (dev)
+│   ├── nginx.conf.template    # Nginx config (envsubst at runtime)
 │   └── Dockerfile             # Frontend container
-├── docker/                     # Docker configurations
-│   └── nginx-prod.conf        # Production nginx config
-├── .env.example               # Local environment template
-├── .env.prod.example          # Production template
-├── docker-compose.yml         # Local dev setup
-└── docker-compose.prod.yml    # Production setup
+├── .env.example               # Local dev environment template
+├── .env.prod.example          # Cloud Run env vars reference
+└── README.md
 ```
 
-## Docker Commands
+---
 
-### Local Development
-```bash
-# Start all services
-docker-compose up
+## Deployment Guide (Google Cloud Run)
 
-# Start in background
-docker-compose up -d
+### Prerequisites
 
-# View logs
-docker-compose logs -f
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
+- [Google Cloud CLI (`gcloud`)](https://cloud.google.com/sdk/docs/install) installed
+- A [DockerHub](https://hub.docker.com/) account
+- A [Google Cloud](https://console.cloud.google.com/) project with Cloud Run enabled
+- MongoDB Atlas cluster running (see [MongoDB Atlas](https://cloud.mongodb.com/))
 
-# Stop all
-docker-compose down
+### Step 1: Update the Backend API URL
 
-# Remove volumes (fresh start)
-docker-compose down -v
+Before building the frontend, update the backend URL in `frontend/src/environments/environment.prod.ts`:
+
+```typescript
+apiUrl: 'https://YOUR-BACKEND-SERVICE-URL.run.app/api',
 ```
 
-### Production
-```bash
-# Build and start
-docker-compose -f docker-compose.prod.yml --env-file .env.prod up --build -d
+> ⚠️ You'll get this URL **after** deploying the backend (Step 4). You may need to build & deploy the frontend **twice** — first to get the backend URL, then again with the correct URL.
 
-# View logs
-docker logs -f learnsinhala-backend-prod
-docker logs -f learnsinhala-frontend-prod
-
-# Stop services
-docker-compose -f docker-compose.prod.yml --env-file .env.prod down
-
-# Restart specific service
-docker-compose -f docker-compose.prod.yml --env-file .env.prod restart frontend
-```
-
-### Building Docker Images
+### Step 2: Build Docker Images
 
 ```bash
 # Build backend
-docker-compose -f docker-compose.prod.yml --env-file .env.prod build backend
+docker build -t sathveegan/learn-sinhala-backend:v1.0.0 ./backend
 
 # Build frontend
-docker-compose -f docker-compose.prod.yml --env-file .env.prod build frontend
-
-# Build both
-docker-compose -f docker-compose.prod.yml --env-file .env.prod build
+docker build -t sathveegan/learn-sinhala-frontend:v1.0.0 ./frontend
 ```
 
-### Push to DockerHub
+### Step 3: Push to DockerHub
 
 ```bash
-# Push backend
-docker-compose -f docker-compose.prod.yml --env-file .env.prod push backend
+# Login to DockerHub
+docker login
 
-# Push frontend
-docker-compose -f docker-compose.prod.yml --env-file .env.prod push frontend
-
-# Push both
-docker-compose -f docker-compose.prod.yml --env-file .env.prod push
+# Push images
+docker push sathveegan/learn-sinhala-backend:v1.0.0
+docker push sathveegan/learn-sinhala-frontend:v1.0.0
 ```
 
-## Architecture
+### Step 4: Deploy Backend to Cloud Run
 
-```
-┌─────────────────────┐
-│   User's Browser    │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Nginx Container    │  ← Serves Angular + Proxies API
-│  (Frontend)         │
-└──────────┬──────────┘
-           │ /api/*
-           ▼
-┌─────────────────────┐
-│  Spring Boot        │  ← REST API
-│  (Backend)          │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  MongoDB Atlas      │  ← Cloud Database
-└─────────────────────┘
+**Option A: Using `gcloud` CLI**
+
+```bash
+gcloud run deploy learn-sinhala-backend \
+  --image docker.io/sathveegan/learn-sinhala-backend:v1.0.0 \
+  --platform managed \
+  --region asia-south1 \
+  --allow-unauthenticated \
+  --port 8080 \
+  --memory 512Mi \
+  --set-env-vars "SPRING_PROFILES_ACTIVE=prod" \
+  --set-env-vars "SPRING_DATA_MONGODB_URI=mongodb+srv://USER:PASS@cluster.mongodb.net/learnsinhala-prod?retryWrites=true&w=majority&authSource=admin" \
+  --set-env-vars "JWT_SECRET=your-generated-jwt-secret" \
+  --set-env-vars "JWT_EXPIRATION=86400000" \
+  --set-env-vars "CORS_ALLOWED_ORIGINS=https://your-frontend-url.run.app"
 ```
 
-## Development Notes
+**Option B: Using Cloud Console UI**
 
-- **Frontend**: Angular 19 with standalone components
-- **Backend**: Spring Boot 3.2.1 with Java 21
-- **Database**: MongoDB Atlas (production) or local MongoDB (dev)
-- **Nginx**: Handles static files + API proxy (no CORS needed)
-- **CSP**: Configured to allow Google Fonts while maintaining security
+1. Go to [Cloud Run Console](https://console.cloud.google.com/run)
+2. Click **"Create Service"**
+3. Enter image URL: `docker.io/sathveegan/learn-sinhala-backend:v1.0.0`
+4. Set region (e.g. `asia-south1`)
+5. Under **"Container, Networking, Security"**:
+   - Port: `8080`
+   - Memory: `512 Mi`
+6. Under **"Variables & Secrets"**, add:
+
+   | Variable | Value |
+   |----------|-------|
+   | `SPRING_PROFILES_ACTIVE` | `prod` |
+   | `SPRING_DATA_MONGODB_URI` | `mongodb+srv://...` |
+   | `JWT_SECRET` | *(generate with `openssl rand -base64 64`)* |
+   | `JWT_EXPIRATION` | `86400000` |
+   | `CORS_ALLOWED_ORIGINS` | `https://your-frontend-url.run.app` |
+
+7. Under **"Authentication"**, select **"Allow unauthenticated invocations"**
+8. Click **"Create"**
+
+Copy the service URL (e.g. `https://learn-sinhala-backend-xxxxx.run.app`).
+
+### Step 5: Deploy Frontend to Cloud Run
+
+```bash
+gcloud run deploy learn-sinhala-frontend \
+  --image docker.io/sathveegan/learn-sinhala-frontend:v1.0.0 \
+  --platform managed \
+  --region asia-south1 \
+  --allow-unauthenticated \
+  --port 8080 \
+  --memory 128Mi
+```
+
+Or use the Cloud Console UI (same steps as backend, but **no environment variables needed**).
+
+### Step 6: Update CORS & Rebuild Frontend
+
+After both services are deployed:
+
+1. **Update CORS** on the backend — edit the `CORS_ALLOWED_ORIGINS` env var to match the frontend Cloud Run URL
+2. **Update `environment.prod.ts`** with the actual backend URL
+3. **Rebuild & redeploy** the frontend:
+   ```bash
+   docker build -t sathveegan/learn-sinhala-frontend:v1.0.1 ./frontend
+   docker push sathveegan/learn-sinhala-frontend:v1.0.1
+   gcloud run deploy learn-sinhala-frontend \
+     --image docker.io/sathveegan/learn-sinhala-frontend:v1.0.1 \
+     --region asia-south1
+   ```
+
+---
+
+## Local Development
+
+```bash
+# Backend (requires Java 21 + Maven)
+cd backend
+mvn spring-boot:run
+
+# Frontend (requires Node 20)
+cd frontend
+npm install
+ng serve
+```
+
+Access at: http://localhost:4200 (frontend) / http://localhost:8080/api (backend)
+
+## Environment Variables Reference
+
+See [.env.prod.example](./.env.prod.example) for the full list of Cloud Run environment variables.
 
 ## License
 
